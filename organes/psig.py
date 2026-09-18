@@ -36,6 +36,59 @@ from __future__ import annotations
 import numpy as np
 
 
+def takens_embed(x: np.ndarray, dim: int = 3, delay: int = 3) -> np.ndarray:
+    """Plongement de Takens d'un signal. Repris de ratiss-neuro/topology.py.
+
+    C'est l'organe que RATISS utilise deja pour transformer un signal 1D
+    (EEG) en nuage de points dans l'espace des phases. Le profil d'un
+    signal devient une FORME, et la forme se lit par persistance.
+    """
+    x = np.asarray(x, dtype=np.float64)
+    n = x.size - (dim - 1) * delay
+    if n < 8:
+        return np.zeros((0, dim))
+    return np.column_stack([x[i * delay: i * delay + n] for i in range(dim)])
+
+
+def h1_diagram_ripser(cloud: np.ndarray, maxdim: int = 1) -> np.ndarray:
+    """Diagramme H1 par ripser — l'organe de ratiss-neuro/topology.py.
+
+    ripser balaie TOUTE la filtration (tous les seuils a la fois), pas un
+    seuil unique. C'est la difference decisive :
+
+      v1 (nous)   : un seuil -> graphe complet -> des milliers de faux cycles.
+                    Une ligne droite obtenait P_sig = 0.63, le tore 0.23.
+                    L'instrument etait invalide (voir exp00).
+      v2 (ripser) : la filtration complete -> les vrais couples (naissance,
+                    mort). C'est ce que RATISS utilise deja pour les EEG.
+
+    Retourne le diagramme H1 (n, 2), les barres infinies incluses.
+    """
+    cloud = np.asarray(cloud, dtype=np.float64)
+    if len(cloud) < 4:
+        return np.zeros((0, 2))
+    try:
+        from ripser import ripser
+    except ImportError:
+        return np.zeros((0, 2))
+    dgms = ripser(cloud, maxdim=maxdim)["dgms"]
+    return dgms[1] if len(dgms) > 1 else np.zeros((0, 2))
+
+
+def p_sig_ripser(cloud: np.ndarray) -> dict:
+    """P_sig lu sur la filtration complete (ripser) + les 2 mesures RATISS."""
+    dgm = h1_diagram_ripser(cloud)
+    pers = _finite_lifetimes(dgm)
+    return {
+        "p_sig": persistence_score(pers),
+        "robust_h1": robust_h1(dgm),
+        "n_h1_bars": int(pers.size),
+        "max_lifetime": float(pers.max()) if pers.size else 0.0,
+        "sum_lifetime": float(pers.sum()) if pers.size else 0.0,
+        "backend": "ripser",
+    }
+
+
 # --------------------------------------------------------------------------
 # H0 + H1 : filtration Rips + reduction de bordure
 #   repris de persistence_optimizer.py::compute_persistence_cpu

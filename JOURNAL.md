@@ -83,3 +83,95 @@ Algos identifiés comme réutilisables pour la VRN :
 repliement protéique (CODON_TABLE, HYDROPHOBICITY, protein_folding_coherence)
 et une **cascade multi-échelle** où la cohérence d'un étage module l'étage
 supérieur. C'est un substrat candidat pour la VRN — sans torch.
+
+---
+
+## 2026-09-18 (suite) — Itération de la métrique : 3 échecs, 1 validation
+
+Règle appliquée : *un truc casse → on remplace → on teste avec autre chose.*
+
+### Échec 1 — le gate par branchement était inversé
+v1 : `resolve_gate` par branchement de k-mers (logique Flye/Unicycler).
+Résultat : chaîne aléatoire → porte **fermée** ; répétition parfaite → porte
+**ouverte**. Inversé.
+
+Cause : une répétition parfaite (`ATGCATGC`) ne *branche* pas dans un graphe
+de de Bruijn — elle **boucle**. Et une répétition **est** un cycle H1. J'avais
+pris la mauvaise moitié de l'assembleur.
+
+**Remplacement :** `consensus_gate`. Un assembleur ne résout pas par
+branchement, il résout par **accord entre lectures**. On perturbe la chaîne,
+on replie chaque variante, on mesure P_sig, et on demande : la forme
+survit-elle aux perturbations ?
+
+### Échec 2 — la représentation était la mienne, pas celle de la chaîne
+v1 : `chain_to_cloud` construisait une hélice hydrophobe. P_sig mesurait
+donc **ma** construction.
+
+**Remplacement :** plongement de **Takens** — l'organe que
+`ratiss-neuro/topology.py` utilise déjà sur des EEG. Le profil
+d'hydrophobicité est un signal ; on le plonge dans l'espace des phases.
+
+Effet mesuré, même chaîne, deux représentations :
+
+| Représentation | P_sig |
+|---|---|
+| hélice v1 (mienne) | 0.0826 |
+| **Takens (RATISS)** | **0.5894** |
+
+Facteur 7. La représentation de RATISS voyait la structure, la mienne la ratait.
+
+### Échec 3 — l'instrument lui-même était invalide
+Ajout d'un dédoublonnage (nécessaire : 20 niveaux d'hydrophobicité
+produisent des dizaines de points confondus, qui gonflent le comptage).
+
+Puis **validation de l'instrument** (exp00) — et là, échec net :
+
+| Nuage | Attendu | Mesuré (v1, seuil unique) |
+|---|---|---|
+| ligne droite | ~0 | **0.6315** ← le plus haut ! |
+| tore (2 cycles) | haut | 0.2320 |
+
+Une **ligne droite** obtenait le meilleur score. Cause : un seuil unique
+(median × 1.5) sur une ligne connecte tout → graphe complet → des milliers
+de cycles bidons. Le calcul de bordure était correct ; c'est le **seuil
+unique** qui était faux.
+
+**Remplacement :** `ripser` — l'organe que `ratiss-neuro/topology.py`
+**appelle déjà** (`from ripser import ripser`). ripser balaie toute la
+filtration, pas un seuil.
+
+### Instrument validé (exp00, backend ripser)
+
+| Nuage | Attendu | Mesuré | robust_h1 |
+|---|---|---|---|
+| ligne droite | 0 cycle | P_sig=0.0000 | **0** ✅ |
+| cercle | 1 cycle | P_sig=0.0000 | **1** ✅ |
+| sinus → Takens | 1 boucle | P_sig=0.0000 | **1** ✅ |
+| bruit gaussien | faible | P_sig=0.2947 | 9 |
+| tore | plusieurs | P_sig=0.1602 | **11** ✅ |
+| marche aléatoire → Takens | ? | P_sig=0.2331 | 16 |
+
+L'instrument **retrouve exactement** la structure attendue.
+
+### Résultat qui survit aux trois remplacements (exp03)
+
+| Signal | robust_h1 | P_sig | g (douane) |
+|---|---|---|---|
+| périodique, période 1 à 60 | **0** | 0.0000 | **0 → se tait** |
+| **aléatoire** | 5 | 0.6138 | **0.69 → s'ouvre** |
+
+**Tous les signaux périodiques se taisent. L'aléatoire s'ouvre.**
+
+Lecture : un signal périodique est *prévisible* — un cycle unique, aucune
+coexistence. Un signal aléatoire est *riche* — plusieurs cycles coexistent.
+La douane VRN ne récompense donc pas la régularité : elle récompense la
+**coexistence de formes**. C'est cohérent avec la formule de
+`ratiss-neuro/topology.py` : `sum(pers)/(n·max(pers)) − 1/n`, qui vaut 0
+pour un cycle unique.
+
+**Réserve :** ce résultat dit ce que l'instrument mesure, pas encore ce que
+la chaîne ATCG *signifie*. Il faut une tâche — un cas où l'on sait ce que
+le neurone devrait répondre — avant toute conclusion sur la VRN.
+
+**Fichiers :** `organes/psig.py`, `organes/atcg.py`, `experiences/exp00..exp03`.

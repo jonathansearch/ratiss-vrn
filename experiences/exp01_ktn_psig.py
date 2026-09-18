@@ -18,7 +18,7 @@ import sys
 sys.path.insert(0, "/workspace/vrn")
 
 import numpy as np
-from organes.psig import p_sig
+from organes.psig import p_sig_ripser as p_sig
 
 
 def make_woven(n_points=900, n_strands=9, turn=2.0, noise=0.02, seed=42):
