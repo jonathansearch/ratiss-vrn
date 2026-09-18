@@ -83,15 +83,38 @@ BASES = ("A", "T", "C", "G")
 ROLE_VRN = {"A": "ancrage", "T": "transmission", "C": "coherence", "G": "generation"}
 
 
-def translate(seq: str) -> list[str]:
-    """Codon -> acide amine. Repris de cascade.py::translate_protein."""
+def translate(seq: str, jusquau_stop: bool = True) -> list[str]:
+    """Codon -> acide amine. Repris de cascade.py::translate_protein.
+
+    `jusquau_stop=True` : comportement biologique (un ORF s'arrete au STOP).
+    `jusquau_stop=False` : lecture COMPLETE de la chaine — necessaire pour
+    le neurone.
+
+    POURQUOI CE DRAPEAU. Bug reel trouve en v3 : une sequence aleatoire de
+    160 bases ne donnait que 14 codons, parce qu'elle rencontrait un codon
+    STOP tres tot. Le neurone lisait donc une proteine TRONQUEE sans le
+    signaler (8 points Takens -> P_sig = 0). Toutes les mesures de la
+    chaine aleatoire etaient faussees par cette troncature silencieuse.
+
+    Pour un neurone, la chaine entiere est l'unite d'information : un
+    codon STOP est un signal REGULATEUR (arret de traduction), pas la fin
+    de la molecule. On lit donc la chaine complete, et on signale le STOP
+    comme diagnostic separe.
+    """
     out = []
     for i in range(0, len(seq) - 2, 3):
         aa = CODON_TABLE.get(seq[i:i + 3], "Gly")
         if aa == "STOP":
-            break
+            if jusquau_stop:
+                break
+            continue
         out.append(aa)
     return out
+
+
+def positions_stop(seq: str) -> list[int]:
+    """Indices (en codons) des codons STOP — signal regulateur."""
+    return [i for i in range(len(seq) // 3) if CODON_TABLE.get(seq[3 * i:3 * i + 3]) == "STOP"]
 
 
 def fold_coherence(protein: list[str]) -> float:
@@ -106,14 +129,14 @@ def fold_coherence(protein: list[str]) -> float:
     return float(np.clip(np.mean(np.abs(np.diff(arr))) / 4.0, 0.0, 1.0))
 
 
-def hydrophobic_signal(seq: str) -> np.ndarray:
+def hydrophobic_signal(seq: str, complet: bool = True) -> np.ndarray:
     """Le signal 1D que porte la chaine : le profil d'hydrophobicite.
 
     Un genome porte un signal (comme un EEG porte une trace). Ici le signal
     est le profil d'hydrophobicite des acides amines le long de la chaine.
     C'est ce signal que l'on plonge dans l'espace des phases.
     """
-    prot = translate(seq)
+    prot = translate(seq, jusquau_stop=not complet)
     if not prot:
         return np.zeros(0)
     return np.array([HYDROPHOBICITY.get(aa, 0.0) for aa in prot], dtype=np.float64)
@@ -147,7 +170,7 @@ def chain_to_cloud(seq: str, dim: int = 3, delay: int = 3) -> np.ndarray:
 
 def chain_to_cloud_plie(seq: str) -> np.ndarray:
     """v1 conservee pour comparaison : repliement 3D en helice hydrophobe."""
-    prot = translate(seq)
+    prot = translate(seq, jusquau_stop=False)
     if len(prot) < 4:
         return np.zeros((0, 3))
     h = np.array([HYDROPHOBICITY.get(aa, 0.0) for aa in prot])
@@ -274,7 +297,7 @@ def neurone_vrn(seq: str, k: int = 3, plie: bool = False) -> dict:
     g : douane (resolution d'ambiguite)
     """
     cloud = chain_to_cloud_plie(seq) if plie else chain_to_cloud(seq)
-    prot = translate(seq)
+    prot = translate(seq, jusquau_stop=False)
 
     s = p_sig(cloud) if len(cloud) >= 4 else {"p_sig": 0.0, "robust_h1": 0, "n_h1_bars": 0}
     c = fold_coherence(prot)
