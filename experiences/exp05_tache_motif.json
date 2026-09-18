@@ -1,0 +1,39 @@
+{
+  "N_par_classe": 100,
+  "longueur": 160,
+  "motif": "ATGCATGCATGCATGCATGCATGCATGCATGCATGCATGC",
+  "critere_scelle": "AUC(y) >= 0.70",
+  "resultats": {
+    "y": {
+      "moy_classe0": 0.0,
+      "moy_classe1": 0.0,
+      "AUC": 0.505
+    },
+    "s": {
+      "moy_classe0": 0.0,
+      "moy_classe1": 0.0,
+      "AUC": 0.505
+    },
+    "c": {
+      "moy_classe0": 1.0,
+      "moy_classe1": 1.0,
+      "AUC": 0.505
+    },
+    "g_dyn": {
+      "moy_classe0": 0.186,
+      "moy_classe1": 0.3277,
+      "AUC": 0.9892
+    },
+    "g_topo": {
+      "moy_classe0": 1.0,
+      "moy_classe1": 1.0,
+      "AUC": 0.505
+    },
+    "fusion": {
+      "moy_classe0": 0.0,
+      "moy_classe1": 0.0,
+      "AUC": 0.505
+    }
+  },
+  "verdict": "pas de detection au seuil scelle \u2014 documente"
+}

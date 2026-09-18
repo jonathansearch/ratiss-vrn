@@ -175,3 +175,58 @@ la chaîne ATCG *signifie*. Il faut une tâche — un cas où l'on sait ce que
 le neurone devrait répondre — avant toute conclusion sur la VRN.
 
 **Fichiers :** `organes/psig.py`, `organes/atcg.py`, `experiences/exp00..exp03`.
+
+---
+
+## Atelier 04 (relais Arena, 2026-09-18) — exp05 : tâche à réponse connue
+
+**Ordre du relais :** donner au neurone v3 une tâche dont on connaît la réponse,
+et voir s'il la trouve. Pas nettoyer, pas polir — tester.
+
+**Tâche (motif caché) :** 2×100 chaînes de 160 bases, graines held-out 1000+i.
+Classe 0 = aléatoire pur. Classe 1 = aléatoire + UN bloc périodique caché
+(`ATGC`×10, 40 bases, position aléatoire). Vérité terrain = labels connus.
+Métrique : AUC (sans seuil). **Critère scellé avant exécution : AUC(y) ≥ 0.70.**
+**Prédiction énoncée avant mesure :** séparation faible (AUC 0.60–0.75),
+portée par g_dyn.
+
+**Résultat (200 chaînes, `experiences/exp05_tache_motif.json`) :**
+
+| mesure | moy. classe 0 | moy. classe 1 | AUC |
+|---|---|---|---|
+| y | 0.0000 | 0.0000 | 0.505 |
+| s (P_sig) | 0.0000 | 0.0000 | 0.505 |
+| c (sémantique) | 1.0000 | 1.0000 | 0.505 |
+| **g_dyn (VOIR)** | 0.1860 | 0.3277 | **0.989** |
+| g_topo (VERIFIER) | 1.0000 | 1.0000 | 0.505 |
+| fusion (s·c) | 0.0000 | 0.0000 | 0.505 |
+
+**Verdict vs critère scellé : pas de détection (AUC(y)=0.505 < 0.70) — documenté.**
+
+**Diagnostic — le géant borgne :** UN SEUL organe voit. `g_dyn` (VOIR/JEPA)
+retrouve le motif caché presque parfaitement (AUC 0.99) — la tâche a bien
+une réponse et elle est trouvable. Mais `y = 0` partout car :
+- `s = 0.0000` sur les 200 chaînes → la fusion-produit `(s·c)` vaut 0
+  et tue le seul signal qui marche (à comparer : exp03 donnait P_sig=0.61
+  sur aléatoire — régime d'entrée différent, à investiguer) ;
+- `c = 1.0000` saturé partout (aucune discrimination sur ce régime) ;
+- `g_topo = 1.0000` bloqué ouvert partout.
+(AUC 0.505 sur mesures constantes = effet des ex-aequo de rangs, sans signal.)
+
+La prédiction est confirmée sur le QUI (g_dyn porte le signal, et même
+mieux que prévu : 0.99) mais infirmée sur y — la cause (s=0 systématique)
+n'était pas anticipée. C'est une donnée, pas un échec.
+
+**Pistes ouvertes (pas des conclusions) :**
+1. Pourquoi `s=0` sur ces 200 chaînes de 160 bases ? Investiguer
+   `chain_to_cloud` + `p_sig_ripser` sur ce régime exact vs exp03.
+2. Pourquoi `c` sature à 1.0 ici (vs 0.08–0.23 en atelier 03) ?
+   Vérifier la normalisation de `semantique.concept` sur ce régime.
+3. Pourquoi `consensus_gate` vaut 1.0 partout ici ? Régime ou bug ?
+4. Fragilité structurelle : la fusion-produit meurt dès qu'UN organe tombe
+   à 0. Piste théorique (option C de la douane) : terme de repli ?
+   Le chef tranche — on ne change rien sans ordre.
+5. Hygiène notée (non traitée, par ordre) : `organes/__pycache__/` versionné.
+
+**Fichiers :** `experiences/exp05_tache_motif.py` (+ `.json` des résultats).
+Rejouable : `python3 experiences/exp05_tache_motif.py` depuis la racine.
