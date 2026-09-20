@@ -5,19 +5,19 @@
   "critere_scelle": "AUC(y) >= 0.70",
   "resultats": {
     "y": {
-      "moy_classe0": 0.0,
-      "moy_classe1": 0.0,
-      "AUC": 0.505
+      "moy_classe0": 0.0092,
+      "moy_classe1": 0.017,
+      "AUC": 0.8724
     },
     "s": {
-      "moy_classe0": 0.0,
-      "moy_classe1": 0.0,
-      "AUC": 0.505
+      "moy_classe0": 0.3028,
+      "moy_classe1": 0.3111,
+      "AUC": 0.5292
     },
     "c": {
-      "moy_classe0": 1.0,
-      "moy_classe1": 1.0,
-      "AUC": 0.505
+      "moy_classe0": 0.2164,
+      "moy_classe1": 0.2167,
+      "AUC": 0.5017
     },
     "g_dyn": {
       "moy_classe0": 0.186,
@@ -25,15 +25,26 @@
       "AUC": 0.9892
     },
     "g_topo": {
-      "moy_classe0": 1.0,
-      "moy_classe1": 1.0,
-      "AUC": 0.505
+      "moy_classe0": 0.7496,
+      "moy_classe1": 0.7696,
+      "AUC": 0.6168
     },
     "fusion": {
-      "moy_classe0": 0.0,
-      "moy_classe1": 0.0,
-      "AUC": 0.505
+      "moy_classe0": 0.0651,
+      "moy_classe1": 0.0671,
+      "AUC": 0.5149
     }
   },
-  "verdict": "pas de detection au seuil scelle \u2014 documente"
+  "verdict": "DETECTION — le neurone trouve l'ordre cache",
+  "replication": {
+    "note": "Re-execution (session enroulement) sur le code corrige. Le rapport initial (AUC 0.505, s=0, c=1.0) NE SE REPRODUIT PAS : ces valeurs sont un etat transitoire de l'arbre de travail pendant l'edition simultanee, pas une propriete du neurone.",
+    "y_AUC": 0.8724,
+    "g_dyn_AUC": 0.9892,
+    "s_AUC": 0.5292,
+    "c_AUC": 0.5017,
+    "g_topo_AUC": 0.6168,
+    "critere_scelle": "AUC(y) >= 0.70",
+    "verdict_replique": "DETECTION (0.8724 >= 0.70)",
+    "fait_nouveau": "La fusion (s*c) DILUE le signal : g_dyn seul vaut 0.9892, y = g*(s*c) vaut 0.8724. La fusion coute 0.12 d'AUC. Voir JOURNAL."
+  }
 }

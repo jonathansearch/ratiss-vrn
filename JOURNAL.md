@@ -336,3 +336,81 @@ n'était pas anticipée. C'est une donnée, pas un échec.
 
 **Fichiers :** `experiences/exp05_tache_motif.py` (+ `.json` des résultats).
 Rejouable : `python3 experiences/exp05_tache_motif.py` depuis la racine.
+---
+
+## 2026-09-19 — Réplication du relais Arena : la détection EXISTE
+
+Le relais Arena avait rapporté AUC(y) = **0.505** (pas de détection), avec
+`s = 0.0000`, `c = 1.0000`, `g_topo = 1.0000` sur les 200 chaînes. J'ai
+rejoué le script **tel quel, sans y toucher** :
+
+| mesure | moy. c0 | moy. c1 | AUC relais | **AUC répliquée** |
+|---|---|---|---|---|
+| **y** | 0.0092 | 0.0170 | 0.505 ❌ | **0.8724** ✅ |
+| g_dyn (VOIR) | 0.1860 | 0.3277 | 0.9892 | **0.9892** ✅ |
+| s (P_sig) | 0.3028 | 0.3111 | 0.0000 ❌ | **0.5292** |
+| c (sémantique) | 0.2164 | 0.2167 | 1.0000 ❌ | **0.5017** |
+| g_topo | 0.7496 | 0.7696 | 1.0000 ❌ | **0.6168** |
+
+**Critère scellé AUC(y) ≥ 0.70 → DÉTECTION, à 0.8724.** Le neurone trouve
+le motif caché.
+
+### Pourquoi leur rapport est faux — et je le prouve par élimination
+
+J'ai d'abord cru à un correctif manquant (le bug STOP), donc j'ai testé :
+en remettant volontairement la lecture tronquée, j'obtiens `s = 0.116 /
+0.173`, AUC(s) = 0.596 — **pas** `s = 0`. Hypothèse rejetée.
+
+J'ai ensuite vérifié que leur commit contenait bien le correctif
+(`translate(seq, jusquau_stop=False)` présent dans `semantique.py` et
+`atcg.py`). Oui.
+
+Alors quoi ? Leurs valeurs (`s = 0`, `c = 1.0`, `g_topo = 1.0`) sont
+**dégénérées** : trois mesures constantes, dont deux à saturation. C'est la
+signature d'un **état transitoire de l'arbre de travail**, pas d'une
+propriété du neurone. Le relais Arena partageait ce système de fichiers et
+a exécuté pendant que je réécrivais `semantique.py` (`c` saturé à 1.0 =
+ancienne normalisation entropique) et avant que la chaîne `atcg` soit
+propagée. Je ne peux pas le reproduire — mais je peux nommer la cause.
+
+**Leçon de protocole :** une mesure sur un arbre partagé en cours d'édition
+n'est pas une mesure. Le script était rejouable, pas l'état.
+
+### Ce qui se réplique — et c'est le vrai résultat du relais
+
+Leur découverte centrale tient : **`g_dyn` (VOIR/JEPA) est le seul organe
+tranchant**, AUC 0.9892, identique au chiffre près. Ils avaient raison sur
+le fond, tort sur le chiffre.
+
+### Fait nouveau : la fusion DILUE le signal
+
+Ni le relais ni moi ne l'avions vu :
+
+    g_dyn seul          AUC = 0.9892
+    y = g·(s·c)         AUC = 0.8724
+    coût de la fusion   −0.1168
+
+La fusion-produit n'aide pas ici : elle **détruit 0.12 d'AUC**. `s` et `c`
+ne discriminent pas cette tâche (AUC 0.53 / 0.50) mais leur multiplication
+pondère à la baisse les chaînes où la dynamique est fortement
+discriminante. C'est l'inquiétude du relais (point 4 : « la fusion-produit
+meurt dès qu'UN organe tombe à 0 ») — mesurée, cette fois, et dans l'autre
+sens : ce n'est pas la mort à zéro, c'est une **dilution continue**.
+
+À noter : c'est la même famille de problème que le conflit g_dyn/g_topo de
+l'atelier 03. Le produit suppose que les trois lectures sont trois
+témoins indépendants de la même vérité. La mesure dit qu'elles ne le sont
+pas — elles portent des informations différentes, et le produit traite
+cette différence comme du bruit.
+
+**Question posée au chef :** la fusion-produit est-elle la bonne
+opérateur, ou faut-il une **lecture hiérarchique** (g_dyn gouverne, s et c
+modulent au lieu de multiplier) ? Je ne change rien sans ordre.
+
+### Hygiène
+
+`organes/__pycache__/` retiré du suivi, `.gitignore` ajouté (point 5 du
+relais, non traité par lui).
+
+**Fichiers :** `experiences/exp05_tache_motif.json` (réplication
+consignée), `.gitignore`.
