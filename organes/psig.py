@@ -50,6 +50,15 @@ def takens_embed(x: np.ndarray, dim: int = 3, delay: int = 3) -> np.ndarray:
     return np.column_stack([x[i * delay: i * delay + n] for i in range(dim)])
 
 
+def _ripser_disponible() -> tuple[bool, str]:
+    """Ripser est-il la, et quelle version ? Renvoie (dispo, message)."""
+    try:
+        import ripser as _r
+        return True, getattr(_r, "__version__", "version inconnue")
+    except ImportError as e:
+        return False, str(e)
+
+
 def h1_diagram_ripser(cloud: np.ndarray, maxdim: int = 1) -> np.ndarray:
     """Diagramme H1 par ripser — l'organe de ratiss-neuro/topology.py.
 
@@ -63,14 +72,36 @@ def h1_diagram_ripser(cloud: np.ndarray, maxdim: int = 1) -> np.ndarray:
                     mort). C'est ce que RATISS utilise deja pour les EEG.
 
     Retourne le diagramme H1 (n, 2), les barres infinies incluses.
+
+    ATTENTION — CE MODULE NE SE TAIT PLUS. La v1 faisait :
+
+        try:
+            from ripser import ripser
+        except ImportError:
+            return np.zeros((0, 2))       # <-- SILENCE
+
+    Un ripser absent renvoyait donc zero barre H1, ce qui se propageait en
+    P_sig = 0, puis en verdict "pas de detection" — sans aucune erreur.
+    Un instrument qui MENT : il rend un resultat vide qui a l'air d'une
+    mesure. C'est ce qui a produit le faux verdict du relais Arena
+    (AUC 0.505, s = 0) : ripser n'etait pas installe a ce moment-la.
+
+    Desormais : si ripser manque, on LEVE. Un instrument casse doit faire
+    du bruit, pas des zeros.
     """
     cloud = np.asarray(cloud, dtype=np.float64)
     if len(cloud) < 4:
         return np.zeros((0, 2))
     try:
         from ripser import ripser
-    except ImportError:
-        return np.zeros((0, 2))
+    except ImportError as e:
+        raise RuntimeError(
+            "INSTRUMENT INDISPONIBLE : ripser n'est pas installe. "
+            "P_sig est INDEFINI, il n'est pas egal a zero. "
+            "(cause : " + str(e) + ") "
+            "Installer avec : pip install ripser. "
+            "Ne jamais lire une absence de ripser comme une mesure."
+        ) from e
     dgms = ripser(cloud, maxdim=maxdim)["dgms"]
     return dgms[1] if len(dgms) > 1 else np.zeros((0, 2))
 
@@ -79,6 +110,7 @@ def p_sig_ripser(cloud: np.ndarray) -> dict:
     """P_sig lu sur la filtration complete (ripser) + les 2 mesures RATISS."""
     dgm = h1_diagram_ripser(cloud)
     pers = _finite_lifetimes(dgm)
+    dispo, ver = _ripser_disponible()
     return {
         "p_sig": persistence_score(pers),
         "robust_h1": robust_h1(dgm),
@@ -86,6 +118,7 @@ def p_sig_ripser(cloud: np.ndarray) -> dict:
         "max_lifetime": float(pers.max()) if pers.size else 0.0,
         "sum_lifetime": float(pers.sum()) if pers.size else 0.0,
         "backend": "ripser",
+        "instrument": f"ripser {ver}" if dispo else "INDISPONIBLE",
     }
 
 

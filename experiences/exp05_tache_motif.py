@@ -48,7 +48,12 @@ def chaine(i, avec_motif):
 
 def main():
     print("=== exp05 : motif cache — critere scelle AUC(y) >= 0.70 ===\n")
-    rec = {k: [] for k in ("y", "s", "c", "g_dyn", "g_topo", "fusion")}
+    # NOTE : ce script a d'abord mesure y = g.(s*c) (produit). Depuis exp06,
+    # neurone_vrn_v3 calcule y en HIERARCHIQUE (g_dyn x m_s x m_topo) et ne
+    # renvoie plus "fusion". On lit donc m_s et m_topo, et c reste un
+    # diagnostic. Voir JOURNAL, atelier 06.
+    rec = {k: [] for k in ("y", "s", "c", "g_dyn", "g_topo", "m_s", "m_topo",
+                           "y_prod_ref")}
     labels = []
     for i in range(N):
         for lab in (0, 1):
@@ -58,10 +63,16 @@ def main():
             rec["c"].append(r["c_semantique"])
             rec["g_dyn"].append(r["g_dyn"])
             rec["g_topo"].append(r["g_topo"])
-            rec["fusion"].append(r["fusion"])
+            rec["m_s"].append(r["m_s"])
+            rec["m_topo"].append(r["m_topo"])
+            rec["y_prod_ref"].append(r["g_dyn"] * r["g_topo"]
+                                     * (r["s_psig"] * r["c_semantique"]))
+            rec["instrument"] = r["instrument"]
             labels.append(lab)
     labels = np.array(labels)
     out = {"N_par_classe": N, "longueur": L, "motif": MOTIF,
+           "operateur": "hierarchique y=g_dyn*m_s*m_topo (exp06)",
+           "instrument": rec.pop("instrument", "n/a"),
            "critere_scelle": "AUC(y) >= 0.70", "resultats": {}}
     print(f"{'mesure':8s} {'moy_c0':>8s} {'moy_c1':>8s} {'AUC':>7s}")
     for k, v in rec.items():

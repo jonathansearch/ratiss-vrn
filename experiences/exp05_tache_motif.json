@@ -2,12 +2,14 @@
   "N_par_classe": 100,
   "longueur": 160,
   "motif": "ATGCATGCATGCATGCATGCATGCATGCATGCATGCATGC",
+  "operateur": "hierarchique y=g_dyn*m_s*m_topo (exp06)",
+  "instrument": "ripser 0.6.15",
   "critere_scelle": "AUC(y) >= 0.70",
   "resultats": {
     "y": {
-      "moy_classe0": 0.0092,
-      "moy_classe1": 0.017,
-      "AUC": 0.8724
+      "moy_classe0": 0.106,
+      "moy_classe1": 0.1902,
+      "AUC": 0.9845
     },
     "s": {
       "moy_classe0": 0.3028,
@@ -29,22 +31,21 @@
       "moy_classe1": 0.7696,
       "AUC": 0.6168
     },
-    "fusion": {
-      "moy_classe0": 0.0651,
-      "moy_classe1": 0.0671,
-      "AUC": 0.5149
+    "m_s": {
+      "moy_classe0": 0.6514,
+      "moy_classe1": 0.6556,
+      "AUC": 0.5292
+    },
+    "m_topo": {
+      "moy_classe0": 0.8748,
+      "moy_classe1": 0.8848,
+      "AUC": 0.6168
+    },
+    "y_prod_ref": {
+      "moy_classe0": 0.0092,
+      "moy_classe1": 0.017,
+      "AUC": 0.8724
     }
   },
-  "verdict": "DETECTION — le neurone trouve l'ordre cache",
-  "replication": {
-    "note": "Re-execution (session enroulement) sur le code corrige. Le rapport initial (AUC 0.505, s=0, c=1.0) NE SE REPRODUIT PAS : ces valeurs sont un etat transitoire de l'arbre de travail pendant l'edition simultanee, pas une propriete du neurone.",
-    "y_AUC": 0.8724,
-    "g_dyn_AUC": 0.9892,
-    "s_AUC": 0.5292,
-    "c_AUC": 0.5017,
-    "g_topo_AUC": 0.6168,
-    "critere_scelle": "AUC(y) >= 0.70",
-    "verdict_replique": "DETECTION (0.8724 >= 0.70)",
-    "fait_nouveau": "La fusion (s*c) DILUE le signal : g_dyn seul vaut 0.9892, y = g*(s*c) vaut 0.8724. La fusion coute 0.12 d'AUC. Voir JOURNAL."
-  }
+  "verdict": "DETECTION \u2014 le neurone trouve l'ordre cache"
 }

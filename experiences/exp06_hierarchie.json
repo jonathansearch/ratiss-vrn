@@ -1,0 +1,30 @@
+{
+  "graine_base": 2000,
+  "N_par_classe": 100,
+  "longueur": 160,
+  "criteres_scelles": {
+    "C1": "AUC(y_hier) > AUC(y_prod)",
+    "C2": "|AUC(y_hier_c) - AUC(y_hier)| <= 0.02 -> c inutile",
+    "C3": "g_dyn est le meilleur organe isole"
+  },
+  "modulateur": "m(x)=0.5+0.5x (borne [0.5,1], ne peut pas annuler)",
+  "AUC": {
+    "g_dyn": 0.9817,
+    "g_topo": 0.5515,
+    "s": 0.4821,
+    "c": 0.4061,
+    "y_prod": 0.8277,
+    "y_prod_noc": 0.8549,
+    "y_hier": 0.9743,
+    "y_hier_c": 0.9746
+  },
+  "verdicts": {
+    "C1_hierarchie_bat_produit": true,
+    "C2_c_inutile": true,
+    "C3_g_dyn_meilleur": true
+  },
+  "deltas_c": {
+    "produit": -0.0272,
+    "hierarchique": 0.0003
+  }
+}

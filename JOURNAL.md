@@ -414,3 +414,95 @@ relais, non traité par lui).
 
 **Fichiers :** `experiences/exp05_tache_motif.json` (réplication
 consignée), `.gitignore`.
+---
+
+## 2026-09-19 — Atelier 06 : hiérarchie vs produit, le sort de c, et le piège réparé
+
+Ordre du chef : (1) hiérarchique, g_dyn gouverne, s et g_topo modulent ;
+(2) prouver que `c` apporte quelque chose, sinon le sortir du chemin de y ;
+(3) critères scellés avant exécution, graines neuves ; (4) réparer le
+fallback silencieux — « un instrument cassé qui se taisait, c'est un
+instrument qui ment ».
+
+### 1. Le piège, réparé et vérifié
+
+`organes/psig.py::h1_diagram_ripser` faisait :
+
+    try:
+        from ripser import ripser
+    except ImportError:
+        return np.zeros((0, 2))      # <-- SILENCE
+
+Ripser absent → zéro barre H1 → `P_sig = 0` → verdict « pas de détection »,
+**sans une erreur**. C'est très probablement la cause exacte du faux verdict
+du relais Arena (`s = 0.0000`, AUC 0.505) : mon `pip install ripser` n'avait
+pas encore eu lieu quand ils ont mesuré. Un code correct, un environnement
+cassé, et un instrument qui se taisait.
+
+Réparation :
+- ripser absent → **RuntimeError explicite**, message actionnable
+  (« P_sig est INDÉFINI, il n'est pas égal à zéro »). Vérifié par
+  falsification : en simulant l'absence d'import, l'appel lève bien.
+- chaque mesure porte désormais `instrument = "ripser 0.6.15"`.
+- dans le neurone, `s_defini` distingue **« non mesurable »** (nuage trop
+  petit) de **« mesuré à zéro »**. Même discipline : aucun zéro qui se fait
+  passer pour une mesure.
+
+### 2. Critères scellés AVANT exécution (exp06)
+
+Graines **neuves** 2000+i (les précédentes : 0-1199, 12-16, 21).
+N = 100/classe, L = 160. Modulateur **fixé a priori** : `m(x) = 0.5 + 0.5x`,
+borné [0.5, 1] — un modulateur peut au pire diviser par deux, jamais
+annuler. C'est la définition opérationnelle de « moduler » vs « multiplier ».
+Tâche identique au relais (motif caché), métrique AUC.
+
+### 3. Résultats — les trois critères sont tranchés
+
+| configuration | AUC (2000+) | AUC (1000+) |
+|---|---|---|
+| P — produit `g·g_topo·(s·c)` | 0.8277 | 0.8724 |
+| P−c — produit sans c | 0.8549 | — |
+| **H — hiérarchique** `g_dyn·m(s)·m(g_topo)` | **0.9743** | **0.9845** |
+| H+c — hiérarchique + c | 0.9746 | — |
+
+| organe isolé | AUC |
+|---|---|
+| **g_dyn (VOIR)** | **0.9817** |
+| g_topo | 0.5515 |
+| s | 0.4821 |
+| **c** | **0.4061** |
+
+**C1 — hiérarchie > produit : CONFIRMÉ.** 0.9743 vs 0.8277 (+0.147).
+
+**C2 — c inutile : CONFIRMÉ.** Gain de `c` en hiérarchique = **+0.0003**
+(seuil scellé 0.02). Dans le produit, ajouter `c` **détériore** l'AUC de
+0.027. `c` seul vaut **0.4061 — sous 0.5, il discrimine à l'envers.**
+Le chef avait raison : les métriques de langage ne servent pas ici.
+
+**C3 — g_dyn meilleur organe : CONFIRMÉ.** 0.9817.
+
+**Réplication :** l'avantage hiérarchique tient sur deux jeux de graines
+indépendants (0.9743 et 0.9845), avec un écart stable de ~0.11-0.15.
+
+### 4. Décision appliquée (sur ordre du chef)
+
+`organes/neurone_vrn.py` : `y = g_dyn · m(s) · m(g_topo)`.
+`g_dyn` est facteur, `s` et `g_topo` modulent. **`c` est sorti du chemin de
+y** — il reste calculé et renvoyé sous `c_semantique`, en **diagnostic
+seulement**. Le script du relais (`exp05_tache_motif.py`) mis à jour vers
+le nouvel opérateur, toujours rejouable ; `y_prod_ref` conservé pour garder
+la comparaison.
+
+### Réserve
+
+Le gain de la hiérarchie vient surtout du fait que `m` **borne** la
+contribution des organes faibles : elle empêche `s` (AUC 0.48, sous le
+hasard) d'inverser le signal. Ce n'est donc pas « la hiérarchie est plus
+vraie » mais « la hiérarchie est plus robuste à un organe non informatif ».
+Un vrai test demanderait une tâche où `s` ou `g_topo` est réellement
+discriminant — à faire avant de conclure que la modulation est le bon
+opérateur en général.
+
+**Fichiers :** `organes/psig.py`, `organes/neurone_vrn.py`,
+`experiences/exp06_hierarchie.py` (+ `.json`),
+`experiences/exp05_tache_motif.py`.

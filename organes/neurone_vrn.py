@@ -101,7 +101,25 @@ def generation(seq: str, cible: float = 0.5, essais: int = 12,
 
 
 def neurone_vrn_v3(seq: str, alpha: float = 1.0, plastique: bool = False) -> dict:
-    """y = g . (s * c)^alpha,  g = g_dyn * g_topo."""
+    """y = g_dyn . m(s) . m(g_topo),  m(x) = 0.5 + 0.5x.
+
+    OPERATEUR DECIDE PAR MESURE (exp06, criteres scelles) :
+
+      produit  y = g_dyn . g_topo . (s . c)   AUC 0.8277
+      hierar.  y = g_dyn . m(s) . m(g_topo)   AUC 0.9743   <- RETENU
+
+    g_dyn GOUVERNE (facteur). s et g_topo MODULENT : m va de 0.5 a 1, donc
+    un modulateur peut au pire diviser le signal par deux, jamais l'annuler.
+    C'est la difference avec le produit, ou un organe a zero tue tout.
+
+    `c` EST SORTI DU CHEMIN DE y (exp06 C2). Mesure : gain de c en
+    hierarchique = +0.0003 (negligeable), et dans le produit il DETERIORE
+    l'AUC de 0.027. c seul vaut 0.4061 — sous 0.5, il discrimine a
+    l'envers. c reste calcule et renvoye, en DIAGNOSTIC seulement (voir la
+    cle "c_semantique"), jamais dans y. Le langage n'a pas prouve qu'il
+    apportait quelque chose ; il est mis hors du chemin tant que ce n'est
+    pas le cas.
+    """
     seq_eff = seq
     gen = {"seq": seq, "delta_ent": entropy_delta(seq), "n_mutations": 0,
            "verdict": "G inactif"}
@@ -110,16 +128,25 @@ def neurone_vrn_v3(seq: str, alpha: float = 1.0, plastique: bool = False) -> dic
         seq_eff = gen["seq"]
 
     cloud = chain_to_cloud(seq_eff)
-    s = p_sig_ripser(cloud) if len(cloud) >= 6 else {"p_sig": 0.0, "robust_h1": 0}
+    # s_defini distingue "non mesurable" de "mesure a zero". Une chaine trop
+    # courte pour plonger n'a PAS un P_sig nul : elle n'a pas de P_sig.
+    # Meme discipline que le correctif ripser : pas de zero qui se fait
+    # passer pour une mesure.
+    s_defini = len(cloud) >= 6
+    if s_defini:
+        s = p_sig_ripser(cloud)
+    else:
+        s = {"p_sig": 0.0, "robust_h1": 0, "instrument": "non mesure (nuage trop petit)"}
     d = jepa(seq_eff)
     topo = consensus_gate(seq_eff)
     sem = concept(seq_eff)
 
     g_dyn = d["g_topo"]
     g_topo = topo["g"]
-    g = g_dyn * g_topo
-    fusion = float((max(s["p_sig"], 0.0) * max(sem["c"], 0.0)) ** alpha)
-    y = g * fusion
+    # modulateurs : bornes [0.5, 1], un organe ne peut pas annuler le signal
+    m_s = 0.5 + 0.5 * float(max(s["p_sig"], 0.0))
+    m_topo = 0.5 + 0.5 * float(max(g_topo, 0.0))
+    y = g_dyn * m_s * m_topo
 
     roles = {}
     for b in seq_eff:
@@ -128,12 +155,14 @@ def neurone_vrn_v3(seq: str, alpha: float = 1.0, plastique: bool = False) -> dic
         "seq": seq_eff,
         "roles": roles,
         "s_psig": s["p_sig"],
-        "c_semantique": sem["c"],
+        "s_defini": s_defini,
+        "instrument": s.get("instrument", "n/a"),
+        "c_semantique": sem["c"],              # DIAGNOSTIC, hors de y
         "c_physique": fold_coherence(translate(seq_eff, jusquau_stop=False)),
         "g_dyn": g_dyn,
         "g_topo": g_topo,
-        "g": g,
-        "fusion": fusion,
+        "m_s": m_s,
+        "m_topo": m_topo,
         "y": y,
         "delta_ent": gen["delta_ent"],
         "delta_ent_avant": entropy_delta(seq),
@@ -146,18 +175,17 @@ def neurone_vrn_v3(seq: str, alpha: float = 1.0, plastique: bool = False) -> dic
 
 if __name__ == "__main__":
     rng = np.random.default_rng(4)
-    print("=== Neurone VRN v3 — trois briques branchees ===\n")
+    print("=== Neurone VRN v3 — operateur hierarchique (exp06) ===\n")
 
     def montre(nom, seq):
         r = neurone_vrn_v3(seq)
         print(f"{nom}")
-        print(f"   s(P_sig)={r['s_psig']:.4f}  c(sem)={r['c_semantique']:.4f}  "
-              f"fusion={r['fusion']:.4f}")
-        print(f"   g_dyn={r['g_dyn']:.4f}  g_topo={r['g_topo']:.4f}  g={r['g']:.4f}  "
-              f"y={r['y']:.4f}")
+        print(f"   y={r['y']:.4f} = g_dyn {r['g_dyn']:.3f} x m_s {r['m_s']:.3f} "
+              f"x m_topo {r['m_topo']:.3f}")
+        print(f"   s={r['s_psig']:.4f} (defini={r['s_defini']}, "
+              f"{r['instrument']})  |  c(diagnostic)={r['c_semantique']:.4f}")
         print(f"   -> VOIR : {r['verdict_dyn']}")
-        print(f"   -> VERIFIER : {r['verdict_topo']}")
-        print(f"   -> NOMMER : c={r['c_semantique']:.4f}\n")
+        print(f"   -> VERIFIER : {r['verdict_topo']}\n")
 
     montre("ORDRE PUR — ATGC repete", "ATGC" * 40)
     montre("ALEATOIRE", "".join(rng.choice(list("ATCG")) for _ in range(160)))
