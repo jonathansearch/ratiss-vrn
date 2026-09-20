@@ -178,6 +178,112 @@ le neurone devrait répondre — avant toute conclusion sur la VRN.
 
 ---
 
+## 2026-09-18 (suite) — Corrélation intra-script : enroulement et cassure
+
+Consigne : *évoluer les chaînes de repliement de chaque neurone afin de
+surveiller exactement d'où l'un va à l'autre, déterminer les taux
+d'enroulement, et le moment où ça casse.*
+
+### Le fondement : le nombre d'enroulement
+
+Le **nombre d'enroulement** est un invariant de Poincaré — il compte les
+tours d'une trajectoire fermée autour d'un centre. Deux oscillateurs
+couplés se **verrouillent** tant que le rapport de leurs nombres
+d'enroulement reste rationnel (langues d'Arnold, Farey, Stern-Brocot), et
+**décrochent** à la frontière. Notre « cassure » est ce décrochage.
+
+### L'instrument, validé avant usage (discipline R7)
+
+Deux artefacts trouvés à la validation, deux corrections :
+
+| Cas | Attendu | v1 | v2 finale |
+|---|---|---|---|
+| cercle | 1 tour | 0.995 ✅ | **0.995** ✅ |
+| cercle ×2 | 2 tours | **−1.990** ❌ signe | **1.990** ✅ |
+| ligne droite | 0 | **−0.500** ❌ | **0.000** ✅ |
+| sinus 3 périodes | ~3 | −2.72 | **2.282** ✅ |
+
+- **Artefact 1 — demi-tour fantôme.** Une ligne droite traversant son
+  centre faisait sauter l'angle de π → un demi-tour inexistant (0.5 tour).
+  Correction : ne compter l'angle que là où la trajectoire est réellement
+  décentrée (rayon > ¼ du rayon max). Physiquement : un nombre
+  d'enroulement n'est défini que pour une trajectoire qui tourne *autour*
+  d'un centre — là où le rayon s'annule, l'angle n'a pas de sens.
+
+- **Artefact 2 — signe arbitraire de la SVD.** Le même cercle parcouru dans
+  le même sens ressortait +1 ou −1 selon l'échantillon, ce qui aurait
+  fabriqué de **fausses cassures**. Correction : convention d'orientation
+  (aire signée positive). Les vraies inversions ressortent en négatif.
+
+### Le critère de cassure : double, et c'est nécessaire
+
+Un seul critère ne tenait pas : le seuil d'écart **s'adapte au régime**
+(0.085 en régime ordonné, 1.009 en régime chaotique), donc le même écart
+absolu est énorme dans un cas et négligeable dans l'autre. Le seuil seul
+produisait des faux positifs.
+
+Critère retenu : **cassure = écart d'enroulement ET décrochage du
+verrouillage (PLV < 0.5)**. Il faut les deux — le régime change *et* les
+deux chaînes se désynchronisent.
+
+### Résultats (exp05)
+
+**Script 3 — transition forcée ordre → chaos :**
+
+| Frontière | Écart | PLV | Verdict |
+|---|---|---|---|
+| ordre → ordre (période 4 → 4) | 0.276 | **1.000** | continue — verrouillé |
+| **ordre → chaos** | 0.936 | **0.197** | **CASSURE — décrochage** |
+
+**Script 2 — chaos homogène :** aucune cassure (écarts 0.216 / 0.113,
+sous le seuil 1.009). Le chaos ne casse pas contre lui-même.
+
+**Script 1 — ordre homogène :** la frontière période-2 → période-4 casse
+(PLV 0.187) ; période-4 → période-8 ne casse pas (PLV 0.819, verrouillage
+conservé malgré un écart réel). C'est le double critère qui distingue les
+deux — et il distingue juste : 2 et 4 sont commensurables, 4 et 8 aussi,
+mais le passage 2→4 change de langue d'Arnold, pas 4→8 dans la même
+famille.
+
+**Enroulement global selon le désordre :**
+
+| p désordre | tours |
+|---|---|
+| 0.0 | **18.21** |
+| 0.2 | 8.31 |
+| 0.4 | 4.55 |
+| 0.6 | 6.23 |
+| 0.8 | −1.60 |
+| 1.0 | 1.65 |
+
+**L'ordre s'enroule, le chaos tourne peu.** 18 tours à l'ordre pur,
+1.6 au chaos pur. Le passage par une valeur négative en p=0.8 signale une
+inversion de sens de rotation — un régime de transition, pas un régime
+stable.
+
+### PRÉDICTION CONFIRMÉE
+
+Énoncée avant mesure : *une cassure doit apparaître à la frontière
+ordre → chaos, pas à l'intérieur d'un régime homogène.* C'est exactement
+ce que donne le script 3 (PLV 1.000 en interne, 0.197 à la transition) et
+le script 2 (aucune cassure).
+
+### Où l'un va à l'autre — la réponse
+
+Le passage d'un neurone à l'autre se lit dans **deux quantités** :
+le **taux d'enroulement local** (où le régime tourne plus ou moins) et le
+**PLV entre voisins** (si les deux se parlent encore). La cassure est le
+moment où les deux tombent ensemble.
+
+### Incident d'environnement
+
+Le conteneur s'est réinitialisé en cours de session : numpy et ripser
+avaient disparu. Code intact (poussé sur GitHub), mesures perdues et
+refaites. Réinstallation effectuée.
+
+**Fichiers :** `organes/enroulement.py`, `experiences/exp05_script.py`.
+
+
 ## Atelier 04 (relais Arena, 2026-09-18) — exp05 : tâche à réponse connue
 
 **Ordre du relais :** donner au neurone v3 une tâche dont on connaît la réponse,
