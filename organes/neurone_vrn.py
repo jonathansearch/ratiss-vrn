@@ -64,40 +64,61 @@ def entropy_delta(seq: str) -> float:
 
 
 def generation(seq: str, cible: float = 0.5, essais: int = 12,
-               seed: int = 0) -> dict:
+               seed: int = 0, forcer: bool = False) -> dict:
     """G — plasticite dirigee par la coherence. G MODIFIE la chaine.
 
     Ordre du chef : "G ne compte pas. G modifie la structure de la chaine
     en reponse a l'ecart mesure par la Douane VR. C'est la boucle de
     retroaction biologique."
 
-    Ici : on mesure Delta_ent (desalignement). Si il est eleve, on cherche
-    par mutation LOCALE (un codon a la fois) la variante qui rapproche la
-    coherence de sa cible. On garde la meilleure. G renvoie la chaine
-    MUTEE, pas un score.
+    Phi D = |Delta_ent - cible| : la distance a la cible de desalignement.
+    G cherche par mutation LOCALE (un codon a la fois) la variante qui
+    reduit Phi D. G renvoie la chaine MUTEE, pas un score.
+
+    --- DEFAUT CORRIGE : LE GARDE A SENS UNIQUE ---
+
+    La v1 faisait :
+
+        if d_ent < cible:
+            return "aligne — pas de mutation necessaire"
+
+    C'etait un test a SENS UNIQUE. Il confondait "sous la cible" avec
+    "aligne". Consequence mesuree : une chaine ordonnee (Delta_ent = 0.0)
+    etait un POINT FIXE ABSORBANT — G ne la touchait jamais
+    (`mutations=0`). Une population ordonnee devenait donc un systeme FIGE,
+    et la stabilisation mesuree etait celle d'un systeme MORT, pas d'un
+    systeme stable. Bug trouve en exp07 en comparant les cycles : valeurs
+    identiques au chiffre pres.
+
+    Le bon critere est la DISTANCE a la cible, pas le signe de l'ecart.
+    `Forcer=True` autorise G a s'eloigner de la cible — necessaire pour
+    explorer depuis un etat degenere (ex. ordre parfait), sous peine de ne
+    jamais pouvoir en sortir.
     """
     d_ent = entropy_delta(seq)
-    if d_ent < cible:
+    phi = abs(d_ent - cible)
+    if phi < 1e-9 and not forcer:
         return {"seq": seq, "delta_ent": d_ent, "n_mutations": 0,
-                "verdict": "aligne — pas de mutation necessaire"}
+                "phi": phi, "verdict": "sur la cible — pas de mutation"}
 
     rng = np.random.default_rng(seed)
     bases = list(seq)
-    meilleure, meilleur_ecart = seq, abs(d_ent - cible)
+    meilleure, meilleur_phi = seq, phi
     n_mut = 0
     for _ in range(essais):
         v = bases.copy()
         i = int(rng.integers(0, len(v)))
         v[i] = str(rng.choice(list("ATCG")))
         cand = "".join(v)
-        ecart = abs(entropy_delta(cand) - cible)
-        if ecart < meilleur_ecart:
-            meilleure, meilleur_ecart = cand, ecart
+        cand_phi = abs(entropy_delta(cand) - cible)
+        if cand_phi < meilleur_phi or (forcer and cand_phi <= meilleur_phi + 1e-12):
+            meilleure, meilleur_phi = cand, cand_phi
             bases = v
             n_mut += 1
     return {"seq": meilleure, "delta_ent": entropy_delta(meilleure),
-            "n_mutations": n_mut,
-            "verdict": f"desaligne (Delta_ent={d_ent:.3f}) — {n_mut} mutations locales"}
+            "n_mutations": n_mut, "phi": meilleur_phi,
+            "verdict": (f"Phi D {phi:.3f} -> {meilleur_phi:.3f} "
+                        f"({n_mut} mutations locales)")}
 
 
 def neurone_vrn_v3(seq: str, alpha: float = 1.0, plastique: bool = False) -> dict:

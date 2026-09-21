@@ -506,3 +506,212 @@ opérateur en général.
 **Fichiers :** `organes/psig.py`, `organes/neurone_vrn.py`,
 `experiences/exp06_hierarchie.py` (+ `.json`),
 `experiences/exp05_tache_motif.py`.
+---
+
+## 2026-09-19 — Atelier 07 : direction finale — fusion et stabilisation
+
+Ordre du chef : aller vers la direction finale, **la fusion et la
+stabilisation des neurones**. Jusqu'ici on lisait UN neurone ; on passe à
+une **population**.
+
+### Le fondement : Kuramoto
+
+Un neurone est un oscillateur (sa trajectoire de Takens tourne — cf.
+atelier 04). N neurones = N oscillateurs couplés. Le **paramètre d'ordre**
+R = |moyenne(e^{iθ})| mesure leur cohérence de phase : R=0 indépendants,
+R=1 verrouillés. C'est la généralisation du PLV à 2 (exp05) à N.
+
+`organes/assemblage.py` :
+- `coherence_population` — R de la population
+- `matrice_plv` — verrouillage deux à deux
+- `fusionner` — deux règles : **F-average** (moyenne simple) et
+  **F-coherente** (pondérée par la confiance, `2|g_dyn − 0.5|` : un
+  neurone à g_dyn franc sait, un neurone à 0.5 doute)
+- `stabiliser` — fait cycler la population (G mute chaque neurone à chaque
+  cycle) et suit R et la dispersion des y
+
+### Deux mensonges trouvés et corrigés — le même motif que le piège ripser
+
+**Mensonge 1 — population dégénérée.** `melange(0.0, seed=i)` renvoie
+`ATGC` répété **quel que soit le seed**. Ma population « ordonnée
+distincte » était donc six copies identiques : R=1.0000, dispersion
+0.0000. Le premier verdict « STABLE » ne mesurait pas la stabilité, il
+mesurait l'**identité**. Corrigé par six motifs réellement distincts.
+
+**Mensonge 2 — le garde à sens unique de G.** Le défaut le plus grave de
+l'atelier :
+
+    if d_ent < cible:
+        return "aligne — pas de mutation necessaire"
+
+Test **à sens unique** : il confond « sous la cible » avec « aligné ». Une
+chaîne ordonnée (`Delta_ent = 0.0`) était un **point fixe absorbant** — G
+ne la touchait jamais. Résultat : tous les cycles donnaient des valeurs
+**identiques au chiffre près**, et la « stabilisation » mesurée était
+celle d'un système **mort**, pas d'un système stable.
+
+C'est exactement le motif du fallback ripser : *un instrument qui rend un
+résultat plausible au lieu de signaler qu'il ne fait rien.* Corrigé :
+le critère est la **distance** à la cible `Phi_D = |Δ_ent − cible|`, plus
+le drapeau `forcer` qui autorise G à s'éloigner de la cible — sans lui, un
+état dégénéré ne peut jamais être quitté.
+
+Vérification : `ordre delta_ent=0.0000 → mutations=7` (avant : 0).
+
+### Résultat — un ATTRACTEUR de population
+
+3 départs × 3 graines, 6 cycles, R par cycle :
+
+| départ | R₀ | R cycles 1-6 | R final |
+|---|---|---|---|
+| ordre parfait | 0.462 | 0.429 → 0.329 → 0.364 → 0.395 → 0.391 | **0.396** |
+| aléatoire | 0.368 | stable ~0.36-0.38 | **0.409** |
+| mixte | 0.549 | 0.402 → 0.381 → 0.359 → 0.368 → 0.367 | **0.360** |
+
+**Trois points de départ différents convergent tous vers R ≈ 0.36-0.41.**
+La population **oublie son point de départ** : c'est un attracteur, pas une
+simple conservation.
+
+### Critères scellés (exp07)
+
+| critère | verdict |
+|---|---|
+| S1 — \|ΔR\| < 0.15 (homogène) | **CONFIRMÉ** (−0.106) |
+| S2 — dispersion non croissante | **CONFIRMÉ** (0.063 → 0.089, tolérance 0.10) |
+| S3 — l'hétérogène doit dériver plus que l'homogène | **INFIRMÉ** |
+| S4 — dispersion nulle ⇒ y_avg == y_coh | **CONFIRMÉ** (contrôle interne OK) |
+
+**S3 infirmé — et c'est une information, pas un échec.** Mon critère partait
+de l'hypothèse que la population hétérogène *doit* dériver (pas d'état
+commun vers lequel converger). La mesure dit le contraire : même
+l'hétérogène converge (R₀=0.371 → 0.333). **C'est cohérent avec
+l'attracteur** — tout converge. S3 était donc un mauvais critère : il
+testait une propriété que la théorie de l'attracteur interdit d'attendre.
+À reformuler : la bonne question n'est pas « qui dérive » mais « **à
+quelle vitesse et vers où** ».
+
+### Fusion
+
+Sur la population mixte (y individuels 0.29-0.48, dispersion 0.096) :
+`y_avg = 0.199`, `y_coh = 0.219`. La pondération par confiance remonte les
+neurones tranchés. L'écart reste modeste ici — la fusion est mesurable mais
+la population testée est petite (6).
+
+### Réserve
+
+L'attracteur R≈0.36-0.41 est mesuré sur 6 neurones et 6 cycles. Il faut
+(i) plus de neurones, (ii) plus de cycles, (iii) vérifier que R≈0.4 n'est
+pas un artefact du nombre de neurones ou de la longueur. Un attracteur vrai
+doit être **indépendant de la taille**.
+
+**Fichiers :** `organes/assemblage.py`,
+`experiences/exp07_stabilisation.py` (+ `.json`), `organes/neurone_vrn.py`
+(correctif du garde à sens unique).
+---
+
+## 2026-09-19 — Atelier 07 bis : le couplage manquait — correction d'une fausse conclusion
+
+Poursuite de la direction finale. J'ai d'abord cru avoir trouvé un
+**attracteur** : trois départs différents convergeaient vers R ≈ 0.36-0.41.
+**C'était faux, et la vérification que je m'étais moi-même imposée l'a tué.**
+
+### La réfutation
+
+J'avais noté en réserve : « un attracteur vrai doit être indépendant de la
+taille ». Mesure de R_final selon N :
+
+| N | R₀ | R_final | 1/√N |
+|---|---|---|---|
+| 4 | 0.435 | 0.449 | 0.500 |
+| 6 | 0.368 | 0.403 | 0.408 |
+| 10 | 0.279 | 0.277 | 0.316 |
+| 16 | 0.204 | 0.209 | 0.250 |
+| 24 | 0.176 | — | 0.204 |
+| 32 | 0.159 | — | 0.177 |
+
+**R_final ≈ R₀ toujours, et R ≈ 0.886/√N.** Or `E[R] = √π/(2√N) = 0.886/√N`
+est exactement le plancher des phases **indépendantes uniformes**. Contrôle :
+N=6 → théorie 0.362, mesuré **0.368** ; N=10 → théorie 0.280, mesuré
+**0.279**.
+
+**Verdict : il n'y avait aucun couplage entre les neurones.** Mon
+« attracteur » était le plancher du hasard, et ma « stabilité » une
+trivialité — des phases indépendantes donnent toujours le même R moyen.
+La convergence apparente venait du fait que R₀ *était déjà* ce plancher.
+
+Contrôle positif que l'instrument sait lire : 8 copies identiques → R=1.0.
+
+### Le couplage, et le second mur
+
+J'ai ajouté un couplage de Kuramoto en version ADN (`coupler`) : chaque
+chaîne est tirée vers le consensus de la population, repris de
+`consensus_chaine` (vote majoritaire, méthode Unicycler).
+
+**Résultat nul.** Ratio R_final/plancher = 0.96-1.04, pour K de 0 à 0.10 et
+N de 6 à 16. Le couplage ne faisait rien.
+
+**Diagnostic.** En forçant les chaînes au consensus :
+
+| positions forcées au consensus | R mesuré |
+|---|---|
+| 0% | 0.368 |
+| 50% | **0.388** |
+| 90% | **0.315** |
+| 100% (identiques) | 1.000 |
+
+R **ne monte pas** quand les chaînes se rapprochent. La phase de la
+trajectoire de Takens est **invariante aux mutations locales**. Le couplage
+agissait sur les bases ; R lisait la phase. **Les deux instruments ne
+parlaient pas de la même chose.**
+
+### La correction : mesurer ce que le couplage fait
+
+`coherence_bases` : accord moyen des chaînes au consensus, par position.
+1.0 = unanimité ; ~0.25 = désaccord total en ADN.
+
+**Le couplage monte alors l'accord, proprement :**
+
+| K | accord final |
+|---|---|
+| 0.00 | 0.4005 |
+| 0.02 | 0.4733 |
+| 0.04 | 0.5466 |
+| 0.10 | 0.7041 |
+| 0.20 | 0.8535 |
+| 0.40 | 0.9646 |
+
+Écart-type < 0.01 sur 3 graines. **Monotone, propre, sur N=6, 10, 12, 16.**
+
+**Pas de transition brusque** — courbe lisse. C'est une information : la
+transition nette de Kuramoto vient de fréquences naturelles **dispersées** ;
+ici le bruit (mutation G) est **homogène**, donc pas de seuil franc. Un vrai
+seuil demanderait des neurones de « fréquence propre » distincte.
+
+### La leçon, plus générale que le bug
+
+Trois fois dans cette session j'ai trouvé le même motif :
+
+1. ripser absent → zéros silencieux → faux verdict ;
+2. `if d_ent < cible` → point fixe absorbant → stabilité d'un système mort ;
+3. R au plancher du hasard → « attracteur » inexistant.
+
+**Un instrument qui rend une valeur plausible sans rien mesurer.** Chaque
+fois la valeur était *cohérente*, *reproductible*, et *fausse*. Ce qui les
+tue à chaque fois n'est pas plus de données : c'est **un contrôle** —
+comparer au plancher théorique, forcer 100%, simuler l'absence de ripser.
+
+### Statut honnête
+
+Ce qui est **solide** : le couplage fait monter l'accord, monotone, sur
+plusieurs N. La fusion (`F-coherente`) et la mesure d'accord `coherence_bases`
+sont des instruments validés (contrôles passés).
+
+Ce qui **reste ouvert** : pas de transition de phase franche ; R (phase) et
+accord (bases) mesurent deux choses différentes et il n'est pas tranché
+laquelle porte la VRN. La population est petite (6-16 neurones), les cycles
+peu nombreux (8). Et surtout : **rien de tout cela n'a été confronté à une
+tâche**. Stabiliser n'est pas encore utile — il reste à montrer qu'une
+population stabilisée *répond mieux* qu'un neurone seul.
+
+**Fichiers :** `organes/assemblage.py` (+ `coupler`, `consensus_chaine`,
+`coherence_bases`), `experiences/exp07_stabilisation.py` (+ balayage K).

@@ -1,0 +1,206 @@
+{
+  "graines": "3000+i",
+  "cycles": 5,
+  "criteres_scelles": {
+    "S1": "|R_T - R_0| < 0.15 (homogene)",
+    "S2": "dispersion finale <= initiale + 0.10 (homogene)",
+    "S3": "l'heterogene doit deriver plus que l'homogene",
+    "S4": "dispersion nulle => y_avg == y_coh",
+    "S5": "le couplage K fait monter l'accord au-dessus de 0.35"
+  },
+  "homogene_ordonnee": {
+    "historique": [
+      {
+        "cycle": 0,
+        "coherence": 0.46180112148893815,
+        "accord_bases": 0.6458333333333334,
+        "y_moyen": 0.35588892136918543,
+        "dispersion": 0.06282942155621346
+      },
+      {
+        "cycle": 1,
+        "coherence": 0.33267095779022465,
+        "accord_bases": 0.6354166666666666,
+        "y_moyen": 0.44152880063481087,
+        "dispersion": 0.06788540980288145
+      },
+      {
+        "cycle": 2,
+        "coherence": 0.3334295775499551,
+        "accord_bases": 0.6270833333333333,
+        "y_moyen": 0.4242937558620769,
+        "dispersion": 0.0674645789042052
+      },
+      {
+        "cycle": 3,
+        "coherence": 0.3680096671594624,
+        "accord_bases": 0.6180555555555555,
+        "y_moyen": 0.376961836155371,
+        "dispersion": 0.059732315738775715
+      },
+      {
+        "cycle": 4,
+        "coherence": 0.4442053214842581,
+        "accord_bases": 0.6145833333333333,
+        "y_moyen": 0.3861242238274143,
+        "dispersion": 0.057818269995049
+      },
+      {
+        "cycle": 5,
+        "coherence": 0.4365934049311985,
+        "accord_bases": 0.6124999999999999,
+        "y_moyen": 0.3736212937832448,
+        "dispersion": 0.05433093802204053
+      },
+      {
+        "cycle": 6,
+        "coherence": 0.470330165807268,
+        "accord_bases": 0.6097222222222223,
+        "y_moyen": 0.3703161238281236,
+        "dispersion": 0.05537048538256566
+      }
+    ],
+    "derive_coherence": 0.008529044318329848,
+    "accord_avant": 0.6458333333333334,
+    "accord_apres": 0.6097222222222223,
+    "derive_accord": -0.036111111111111094,
+    "dispersion_avant": 0.06282942155621346,
+    "dispersion_apres": 0.05537048538256566,
+    "plancher_hasard": 0.3618006272791338,
+    "au_dessus_du_plancher": true,
+    "synchronise": true,
+    "stable": true
+  },
+  "homogene_aleatoire": {
+    "historique": [
+      {
+        "cycle": 0,
+        "coherence": 0.36789064777312896,
+        "accord_bases": 0.4659722222222223,
+        "y_moyen": 0.10671239955297707,
+        "dispersion": 0.01556993706253917
+      },
+      {
+        "cycle": 1,
+        "coherence": 0.3593497095091822,
+        "accord_bases": 0.4701388888888889,
+        "y_moyen": 0.10520150688706191,
+        "dispersion": 0.01658782714172303
+      },
+      {
+        "cycle": 2,
+        "coherence": 0.36886959144031534,
+        "accord_bases": 0.4729166666666667,
+        "y_moyen": 0.10035489095826826,
+        "dispersion": 0.013288500021958184
+      },
+      {
+        "cycle": 3,
+        "coherence": 0.35117768758187307,
+        "accord_bases": 0.46875,
+        "y_moyen": 0.09815294296253352,
+        "dispersion": 0.013344648045376772
+      },
+      {
+        "cycle": 4,
+        "coherence": 0.34487703080306237,
+        "accord_bases": 0.47222222222222227,
+        "y_moyen": 0.10310762980770101,
+        "dispersion": 0.008428802632272558
+      },
+      {
+        "cycle": 5,
+        "coherence": 0.3567959299104716,
+        "accord_bases": 0.47500000000000003,
+        "y_moyen": 0.1037380721553462,
+        "dispersion": 0.012194516646541337
+      },
+      {
+        "cycle": 6,
+        "coherence": 0.38562342673708777,
+        "accord_bases": 0.47500000000000003,
+        "y_moyen": 0.10783624866338704,
+        "dispersion": 0.012477091195467332
+      }
+    ],
+    "derive_coherence": 0.017732778963958806,
+    "accord_avant": 0.4659722222222223,
+    "accord_apres": 0.47500000000000003,
+    "derive_accord": 0.009027777777777746,
+    "dispersion_avant": 0.01556993706253917,
+    "dispersion_apres": 0.012477091195467332,
+    "plancher_hasard": 0.3618006272791338,
+    "au_dessus_du_plancher": false,
+    "synchronise": true,
+    "stable": true
+  },
+  "mixte_heterogene": {
+    "historique": [
+      {
+        "cycle": 0,
+        "coherence": 0.37115591677250104,
+        "accord_bases": 0.5173611111111112,
+        "y_moyen": 0.21715315605565,
+        "dispersion": 0.11863189064487933
+      },
+      {
+        "cycle": 1,
+        "coherence": 0.3069667397308613,
+        "accord_bases": 0.5145833333333333,
+        "y_moyen": 0.24699409619085763,
+        "dispersion": 0.15284626261812995
+      },
+      {
+        "cycle": 2,
+        "coherence": 0.3314984145259534,
+        "accord_bases": 0.5090277777777779,
+        "y_moyen": 0.22950101530042696,
+        "dispersion": 0.13761420852854686
+      },
+      {
+        "cycle": 3,
+        "coherence": 0.41832613180382566,
+        "accord_bases": 0.5041666666666667,
+        "y_moyen": 0.217473944576443,
+        "dispersion": 0.11664802477702592
+      },
+      {
+        "cycle": 4,
+        "coherence": 0.419421561978275,
+        "accord_bases": 0.5034722222222222,
+        "y_moyen": 0.21655252639265576,
+        "dispersion": 0.12154356721601921
+      },
+      {
+        "cycle": 5,
+        "coherence": 0.3998251034841808,
+        "accord_bases": 0.5027777777777778,
+        "y_moyen": 0.21491333609351745,
+        "dispersion": 0.12126450610410618
+      },
+      {
+        "cycle": 6,
+        "coherence": 0.41933427098083953,
+        "accord_bases": 0.5006944444444443,
+        "y_moyen": 0.20942440538248563,
+        "dispersion": 0.1235126490250344
+      }
+    ],
+    "derive_coherence": 0.04817835420833849,
+    "accord_avant": 0.5173611111111112,
+    "accord_apres": 0.5006944444444443,
+    "derive_accord": -0.01666666666666683,
+    "dispersion_avant": 0.11863189064487933,
+    "dispersion_apres": 0.1235126490250344,
+    "plancher_hasard": 0.3618006272791338,
+    "au_dessus_du_plancher": true,
+    "synchronise": true,
+    "stable": true
+  },
+  "verdicts": {
+    "S1": true,
+    "S2": true,
+    "S3": true,
+    "S4": true
+  }
+}
