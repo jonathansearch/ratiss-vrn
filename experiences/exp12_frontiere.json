@@ -1,0 +1,41 @@
+{
+  "graine_base": 13000,
+  "N": 15,
+  "seuil_rejet": 0.8,
+  "criteres_scelles": {
+    "V1": "fitness non croissante sur >=80% des segments",
+    "V2": "min(fitness) < 0.80",
+    "V3": "ecart-type de mu* <= 0.03",
+    "V4": "sans bloc : fitness dans [0.35,0.65] partout",
+    "V5": "0 < mu* < 0.30"
+  },
+  "courbe_fitness": {
+    "mu=0.00": 0.9367,
+    "mu=0.02": 0.9103,
+    "mu=0.05": 0.7841,
+    "mu=0.08": 0.635,
+    "mu=0.12": 0.5571,
+    "mu=0.18": 0.422,
+    "mu=0.25": 0.3329,
+    "mu=0.30": 0.3221
+  },
+  "courbe_sans_bloc": {
+    "mu=0.00": 0.5,
+    "mu=0.02": 0.4954,
+    "mu=0.05": 0.4494,
+    "mu=0.08": 0.4875,
+    "mu=0.12": 0.4967,
+    "mu=0.18": 0.4748,
+    "mu=0.25": 0.4671,
+    "mu=0.30": 0.5249
+  },
+  "frontiere_mu_star": 0.0628,
+  "frontiere_mu_sd": 0.0244,
+  "verdicts": {
+    "V1": true,
+    "V2": true,
+    "V3": true,
+    "V4_controle": true,
+    "V5": true
+  }
+}

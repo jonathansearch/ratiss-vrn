@@ -229,10 +229,105 @@ def fig_tache_motif():
     plt.close(fig)
 
 
+def fig_thermometre():
+    """Thermometre : separation AUC par fenetre, et le temoin qui le bat."""
+    d = _json("exp10_thermometre_niveau.json")
+    auc = d["auc"]
+    W = d["fenetres"]
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.0))
+
+    x = np.arange(len(W))
+    dp = [auc[f"L600|D+|w{w}|psig"] for w in W]
+    dm = [auc[f"L600|D-|w{w}|psig"] for w in W]
+    dpv = [auc[f"L600|D+|w{w}|variance"] for w in W]
+    ax.plot(x, dp, "-o", color=BLEU, lw=2, label="D+ : P_sig")
+    ax.plot(x, dm, "--s", color=ORANGE, lw=1.6, label="D- : P_sig (infirme)")
+    ax.plot(x, dpv, ":^", color=VERT, lw=1.6, label="D+ : variance locale")
+    ax.axhline(0.5, color="k", lw=1, ls=":")
+    ax.text(0.02, 0.52, "hasard", fontsize=8)
+    ax.axhline(0.75, color=ROUGE, lw=1, ls="--", alpha=0.6)
+    ax.text(0.02, 0.77, "critere U1 (0.75)", fontsize=8, color=ROUGE)
+    ax.set_xticks(x); ax.set_xticklabels([f"w={w}" for w in W])
+    ax.set_ylim(0.4, 1.05); ax.set_ylabel("AUC de separation")
+    ax.set_title("Le thermometre separe D+, rate D-")
+    ax.legend(frameon=False, fontsize=8, loc="lower right")
+
+    ctrl = [d["controle_sans_zone"][f"w{w}"] for w in W]
+    ax2.bar(x, ctrl, color=GRIS)
+    ax2.axhline(0.5, color="k", lw=1, ls=":")
+    for xi, v in zip(x, ctrl):
+        ax2.text(xi, v + 0.01, f"{v:.3f}", ha="center", fontsize=9)
+    ax2.set_xticks(x); ax2.set_xticklabels([f"w={w}" for w in W])
+    ax2.set_ylim(0, 0.7); ax2.set_ylabel("AUC contre zone fictive")
+    ax2.set_title("CONTROLE : sans zone plantee, l'AUC reste a 0.5")
+    fig.tight_layout()
+    fig.savefig(SORTIE / "thermometre.png")
+    plt.close(fig)
+
+
+def fig_frontiere():
+    """Fitness(mu) : la courbe EST le generateur de contraintes."""
+    d = _json("exp12_frontiere.json")
+    cb, cc = d["courbe_fitness"], d["courbe_sans_bloc"]
+    mus = [float(k.split("=")[1]) for k in cb]
+    fb = [cb[k] for k in cb]
+    fc = [cc[k] for k in cc]
+    mu_star = d["frontiere_mu_star"]
+    sd = d["frontiere_mu_sd"]
+
+    fig, ax = plt.subplots(figsize=(6.6, 4.2))
+    ax.plot(mus, fb, "-o", color=BLEU, lw=2, label="fitness (bloc plante)")
+    ax.plot(mus, fc, "--s", color=GRIS, lw=1.4, label="témoin (sans bloc)")
+    ax.axhline(0.80, color=ROUGE, lw=1.4, ls="--")
+    ax.text(0.16, 0.82, "seuil de rejet (0.80)", fontsize=8, color=ROUGE)
+    ax.axvspan(max(0, mu_star - sd), mu_star + sd, color=ROUGE, alpha=0.15)
+    ax.annotate(f"mu* = {mu_star:.3f}\n± {sd:.3f}", (mu_star, 0.80),
+                xytext=(mu_star + 0.04, 0.87), color=ROUGE, fontsize=9,
+                arrowprops=dict(arrowstyle="->", color=ROUGE))
+    ax.set_xlabel("mu — taux de dégradation")
+    ax.set_ylabel("fitness (séparation AUC)")
+    ax.set_ylim(0.0, 1.02)
+    ax.set_title("Frontière de validité : le seuil de rejet est LU sur la courbe")
+    ax.legend(frameon=False)
+    fig.tight_layout()
+    fig.savefig(SORTIE / "frontiere.png")
+    plt.close(fig)
+
+
+def fig_recombinaison():
+    """Recombinaison vs mutation : un coup, puis 3 generations."""
+    d = _json("exp11_recombinaison.json")
+    f = d["fitness_moyenne"]
+    g = d["generations"]
+
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(10.2, 4.0))
+    noms = ["parent", "recomb\nhomologue", "recomb\nnon homologue", "mutation"]
+    vals = [f["parent1"], f["recomb_hom"], f["recomb_nonhom"], f["mutation"]]
+    couleurs = [GRIS, VERT, ORANGE, ROUGE]
+    ax.bar(noms, vals, color=couleurs)
+    for i, v in enumerate(vals):
+        ax.text(i, v + 0.015, f"{v:.3f}", ha="center", fontsize=9)
+    ax.set_ylim(0, 1.05); ax.set_ylabel("fitness (un coup)")
+    ax.set_title("Un coup : l'homologie (R2 +0.443)")
+
+    gm, gr = g["mutation"], g["recomb_hom"]
+    gen = np.arange(len(gm))
+    ax2.plot(gen, gm, "-o", color=ROUGE, lw=2, label="mutation forcée")
+    ax2.plot(gen, gr, "-s", color=VERT, lw=2, label="recombinaison homologue")
+    ax2.set_xlabel("génération"); ax2.set_ylabel("fitness (population)")
+    ax2.set_ylim(0.5, 1.02)
+    ax2.set_title("3 générations : la recombinaison monte")
+    ax2.legend(frameon=False)
+    fig.tight_layout()
+    fig.savefig(SORTIE / "recombinaison.png")
+    plt.close(fig)
+
+
 def main():
     print("generation des figures ->", SORTIE)
     for f in (fig_criticite, fig_enroulement, fig_hierarchie, fig_couplage,
-              fig_coherence_taille, fig_population, fig_tache_motif):
+              fig_coherence_taille, fig_population, fig_tache_motif,
+              fig_thermometre, fig_frontiere, fig_recombinaison):
         f()
         print("  ok", f.__name__)
     print("termine.")

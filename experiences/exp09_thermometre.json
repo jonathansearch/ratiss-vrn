@@ -1,0 +1,39 @@
+{
+  "graine_base": 5000,
+  "N_par_condition": 30,
+  "fenetres": [
+    36,
+    48,
+    64
+  ],
+  "chance": 0.158,
+  "criteres_scelles": {
+    "T1": "argmax P_sig dans la zone (D+) >= 70%",
+    "T2": "argmin P_sig dans la zone (D-) >= 70%",
+    "T3": "ecart entre fenetres <= 20 points",
+    "T4": "sur chaine sans zone, taux <= chance+15 points",
+    "T5": "P_sig bat la variance locale comme temoin"
+  },
+  "taux": {
+    "D+|psig|w36": 0.3333,
+    "D+|psig|w48": 0.3333,
+    "D+|psig|w64": 0.3333,
+    "D-|psig|w36": 0.0667,
+    "D-|psig|w48": 0.0667,
+    "D-|psig|w64": 0.1,
+    "D+|variance|w36": 0.1,
+    "D+|variance|w48": 0.0667,
+    "D+|variance|w64": 0.0333,
+    "D-|variance|w36": 0.1667,
+    "D-|variance|w48": 0.1333,
+    "D-|variance|w64": 0.1333
+  },
+  "controle_hallucination": 0.1667,
+  "verdicts": {
+    "T1": false,
+    "T2": false,
+    "T3": false,
+    "T4_controle": true,
+    "T5": true
+  }
+}

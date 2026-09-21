@@ -1,0 +1,53 @@
+{
+  "graine_base": 12000,
+  "N_pop": 20,
+  "mu": 0.05,
+  "bloc": [
+    234,
+    324
+  ],
+  "fenetre": 48,
+  "version": "v2 (direction D+ ; la v1 sur graines 11000+ a ete jetee par R5)",
+  "criteres_scelles": {
+    "R1": "recomb_hom - mutation >= +0.10 AUC",
+    "R2": "recomb_hom - recomb_nonhom >= +0.10 AUC",
+    "R3": "diversite recomb >= 0.30",
+    "R4": "gen3 recomb > gen3 mutation + 0.10",
+    "R5": "controle: bloc intact dans fond ordonne >= 0.80"
+  },
+  "fitness_moyenne": {
+    "mutation": 0.8133,
+    "recomb_hom": 0.9078,
+    "recomb_nonhom": 0.4646,
+    "identite": 0.9182,
+    "parent1": 0.9182
+  },
+  "diversite_moyenne": {
+    "mutation": 0.0361,
+    "recomb_hom": 0.5369,
+    "recomb_nonhom": 0.4872,
+    "identite": 0.0
+  },
+  "generations": {
+    "mutation": [
+      0.9253,
+      0.8317,
+      0.6839,
+      0.6168
+    ],
+    "recomb_hom": [
+      0.9329,
+      0.9532,
+      0.9641,
+      0.9665
+    ]
+  },
+  "controle_mesure": 0.9626,
+  "verdicts": {
+    "R1": false,
+    "R2": true,
+    "R3": true,
+    "R4": true,
+    "R5_controle": true
+  }
+}

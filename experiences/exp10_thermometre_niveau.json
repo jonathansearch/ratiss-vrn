@@ -1,0 +1,56 @@
+{
+  "graine_base": 8000,
+  "N": 40,
+  "fenetres": [
+    36,
+    48,
+    64
+  ],
+  "criteres_scelles": {
+    "U1": "AUC(dedans>dehors) >= 0.75 en D+ (L=600)",
+    "U2": "AUC(dedans<dehors) >= 0.75 en D- (L=600)",
+    "U3": "U1 et U2 aux 3 fenetres",
+    "U4": "controle sans zone dans [0.35,0.65]",
+    "U5": "P_sig bat la variance",
+    "U6": "tient a L=900 (condition non vue)"
+  },
+  "auc": {
+    "L600|D+|w36|psig": 0.95,
+    "L600|D+|w36|variance": 0.9966,
+    "L600|D+|w48|psig": 0.9204,
+    "L600|D+|w48|variance": 0.9979,
+    "L600|D+|w64|psig": 0.8468,
+    "L600|D+|w64|variance": 0.9605,
+    "L600|D-|w36|psig": 0.2089,
+    "L600|D-|w36|variance": 0.171,
+    "L600|D-|w48|psig": 0.3507,
+    "L600|D-|w48|variance": 0.1771,
+    "L600|D-|w64|psig": 0.4686,
+    "L600|D-|w64|variance": 0.2469,
+    "L900|D+|w36|psig": 0.9748,
+    "L900|D+|w36|variance": 0.9982,
+    "L900|D+|w48|psig": 0.9589,
+    "L900|D+|w48|variance": 0.9988,
+    "L900|D+|w64|psig": 0.92,
+    "L900|D+|w64|variance": 0.981,
+    "L900|D-|w36|psig": 0.2499,
+    "L900|D-|w36|variance": 0.1822,
+    "L900|D-|w48|psig": 0.4172,
+    "L900|D-|w48|variance": 0.1763,
+    "L900|D-|w64|psig": 0.5254,
+    "L900|D-|w64|variance": 0.2083
+  },
+  "controle_sans_zone": {
+    "w36": 0.5147,
+    "w48": 0.4682,
+    "w64": 0.4746
+  },
+  "verdicts": {
+    "U1": true,
+    "U2": false,
+    "U3": false,
+    "U4_controle": true,
+    "U5": false,
+    "U6": true
+  }
+}

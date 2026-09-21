@@ -874,3 +874,169 @@ jeton** qui a circulé.
 
 **Fichiers :** `README.md`, `LICENSE`, `requirements.txt`,
 `figures/generer.py`, `figures/img/*.png`.
+
+---
+
+# CHANGEMENT DE CAP — LE STRUCTUREL PUR
+
+Consigne : « puisque ça ne passe pas, changeons de cap : teste ceux-ci
+(structurel pur) ». Quatre directions : (1) thermomètre de cohérence
+topologique, (2) générateur de contraintes / frontière de validité,
+(3) banc d'essai génomique — recombinaison au lieu de mutation forcée,
+(4) audit des chaînes.
+
+Idée maîtresse : **cesser de demander au neurone de CLASSER, lui demander de
+MESURER.** On ne lui demande plus « quelle est la classe ? » mais « où et
+combien la structure change-t-elle ? ».
+
+---
+
+## 2026-09-19 — Atelier 09 : thermomètre, version pic (INFIRMÉ)
+
+Premier montage : planter une zone de structure différente dans une chaîne,
+balayer par fenêtre glissante, lire le P_sig local, et demander au détecteur
+de **LOCALISER** la zone (son pic tombe-t-il dedans ?).
+
+*Note méthodologique : une sonde sur 4 chaînes avait donné 4/4 « succès ».
+Le test scellé a donné 33%. Les sondes ne prouvent rien — c'est le test
+scellé qui décide.*
+
+| critère scellé | résultat |
+|---|---|
+| T1 localisation D+ (≥70%) | **INFIRMÉ** — 33.3% |
+| T2 localisation D- (≥70%) | **INFIRMÉ** — 6.7% (sous la chance) |
+| T3 robustesse aux fenêtres | **INFIRMÉ** |
+| T4 contrôle anti-hallucination | OK — 16.7% ≈ chance 15.8% |
+| T5 bat le témoin naïf | confirmé |
+
+Chance = 15.8% (couverture de la zone). Le détecteur ne localise pas par
+pic. **Verdict consigné, il ne bouge pas.**
+
+Mais le diagnostic a révélé autre chose : en moyennant le P_sig *à
+l'intérieur* de la zone contre *à l'extérieur*, l'écart est net —
+D+ : dedans 0.21–0.36 contre dehors 0.05–0.09 ; D‑ : dedans 0.195 contre
+dehors 0.326. Le thermomètre lit un **niveau**, pas un sommet.
+
+## 2026-09-19 — Atelier 10 : thermomètre, version niveau (PARTIELLEMENT INFIRMÉ)
+
+Constat d'atelier 09 fait sur graines 5000+ → **exploratoire**. Rescellé et
+retesté sur **graines neuves 8000+**, N=40.
+
+| critère scellé | résultat |
+|---|---|
+| U1 séparation D+ (AUC≥0.75) | **CONFIRMÉ** — 0.950 / 0.920 / 0.847 |
+| U2 séparation D‑ (AUC≥0.75) | **INFIRMÉ** — 0.791 / 0.649 / 0.531 |
+| U3 robustesse 3 fenêtres | **INFIRMÉ** (dû à U2) |
+| U4 contrôle sans zone (≈0.5) | **OK** — 0.515 / 0.468 / 0.475 |
+| U5 bat la variance locale | **INFIRMÉ** — variance 0.997 contre P_sig 0.950 |
+| U6 généralise à L=900 | **CONFIRMÉ** — 0.975 / 0.959 / 0.920 |
+
+**Le point dur : U5.** Une variance locale du signal, sans aucune topologie,
+sépare le désordre planté MIEUX que la persistance. Sans compter qu'elle est
+~8 ms → quasi gratuite contre 8 ms *par fenêtre* pour le P_sig.
+
+**Conclusion honnête :** l'instrument lit une structure réelle dans UN sens
+(désordre dans l'ordre, AUC ≈ 0.95, robuste à la longueur), échoue dans
+l'autre, et **ne justifie pas son coût** face à une variance locale. Le
+« thermomètre topologique » n'est, pour l'instant, **pas** l'outil que la
+direction 1 espérait.
+
+## 2026-09-19 — Atelier 11 : recombinaison vs mutation (direction 3)
+
+Hypothèse : exp08 avait échoué non par faiblesse de la population, mais
+parce que l'opération (mutation **forcée**) détruisait l'information. Tester
+une **vraie** opération génomique : recombinaison homologue entre chaînes
+distinctes.
+
+**v1 (graines 11000+) — JETÉE.** J'avais mis l'ordre dans le bloc et le
+désordre dans le fond — la direction **D‑**, celle qui est *infirmée*. Le
+contrôle R5 l'a attrapé : bloc intact → fitness 0.313 au lieu de ≥0.80.
+
+**v2 (graines neuves 12000+), fitness = direction D+ qui marche :**
+
+| opération | fitness | diversité |
+|---|---|---|
+| parent intact | 0.918⁷ | — |
+| recombinaison homologue | 0.908 | 0.537 |
+| recombinaison non homologue | 0.465 | 0.487 |
+| mutation forcée | 0.813 | 0.036 |
+
+| critère scellé | résultat |
+|---|---|
+| R5 contrôle mesure | **OK** — 0.963 |
+| R1 un coup : recomb − mutation ≥ +0.10 | **INFIRMÉ** — +0.094 **(manque de 0.006)** |
+| R2 homologie bat non homologue ≥ +0.10 | **CONFIRMÉ** — **+0.443** |
+| R3 diversité ≥ 0.30 | **CONFIRMÉ** — 0.537 |
+| R4 3 générations | **CONFIRMÉ, massif** |
+
+Sur 3 générations avec sélection :
+
+```
+mutation   : 0.925 → 0.832 → 0.684 → 0.617   (s'effondre)
+recombine  : 0.933 → 0.953 → 0.964 → 0.967   (monte)
+```
+
+**C'est la première fois qu'une opération de population fait mieux que la
+dégradation.** Le vrai résultat n'est pas R1 (qui rate de 0.006, seuil non
+touché) mais **R2** : c'est bien l'**homologie** qui agit (+0.443), pas la
+recombinaison en général. Et R4 : la recombinaison **améliore** là où la
+mutation s'effondre.
+
+## 2026-09-19 — Atelier 12 : frontière de validité (direction 2)
+
+Degrader la chaîne par mutation à taux mu croissant, lire la fitness :
+la courbe fitness(mu) EST le générateur de contraintes. Frontière mu* =
+taux où la fitness passe sous 0.80.
+
+**v1 — contrôle V4 a attrapé un bug dans MON code de mesure.** Sur chaîne
+sans bloc, fitness « sans bloc » = **0.000** au lieu de 0.5. Cause : les
+rangs entiers dans `_auc` renvoient 0 sur un signal constant (ex æquo
+parfaits) au lieu de 0.5 « aucune information ». Corrigé par des **rangs
+moyens** dans un module partagé `organes/mesure.py`, testé sur cas connus
+(0.5 / 1.0 / 0.0 / 0.333 vérifié à la main).
+
+C'est le **quatrième** instrument faux attrapé par un contrôle connu
+d'avance dans ce dépôt. Le motif est constant et vaut la peine d'être écrit :
+**un instrument qui rend une valeur plausible n'est pas un instrument juste.**
+
+**v2 (graines neuves 13000+) — les 5 critères CONFIRMÉS :**
+
+| mu | fitness (bloc) | fitness (sans bloc) |
+|---|---|---|
+| 0.00 | 0.937 | 0.500 |
+| 0.02 | 0.910 | 0.495 |
+| 0.05 | 0.784 | 0.449 |
+| 0.08 | 0.635 | 0.488 |
+| 0.12 | 0.557 | 0.497 |
+| 0.18 | 0.422 | 0.475 |
+| 0.25 | 0.333 | 0.467 |
+| 0.30 | 0.322 | 0.525 |
+
+| critère scellé | résultat |
+|---|---|
+| V1 dégradation monotone | **CONFIRMÉ** — 7/7 segments |
+| V2 frontière existe | **CONFIRMÉ** — min 0.322 < 0.80 |
+| V3 reproductible | **CONFIRMÉ** — **mu\* = 0.063 ± 0.024** |
+| V4 contrôle sans bloc | **OK** — plage [0.449, 0.525] |
+| V5 frontière non triviale | **CONFIRMÉ** |
+
+**La direction 2 tient.** Il existe un seuil de rejet reproductible à
+**mu\* ≈ 0.06** : au-delà, le neurone cesse de lire le bloc. Et le contrôle
+V4 confirme que ce n'est pas la disparition générale du signal (sans bloc,
+la fitness reste à 0.5 quel que soit mu), mais bien la **perte de la
+structure plantée**. C'est exactement le « générateur de contraintes »
+demandé : la zone AUC < 0.80 devient le seuil de rejet automatique.
+
+### Bilan provisoire du changement de cap
+
+| direction | état |
+|---|---|
+| 1 thermomètre | lecture réelle mais **battue par une variance** (U5) |
+| 4 audit | même instrument que 1 — même limite |
+| 3 recombinaison | **piste vivante** : R2 +0.443, R4 massif ; R1 rate de 0.006 |
+| 2 frontière | **tenue** : mu* = 0.063 ± 0.024, contrôle OK |
+
+Deux directions tiennent (2 et 3), une est battue par un témoin trivial (1/4).
+La direction 3 reste la plus intéressante : c'est la seule où une opération
+*de population* fait mieux que la dégradation.
+

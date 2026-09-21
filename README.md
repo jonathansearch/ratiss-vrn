@@ -81,6 +81,64 @@ Une population stabilisée **ne bat pas** un neurone seul sur cette tâche
 **n'apporte pas d'information** quand les lecteurs regardent la même
 entrée.
 
+---
+
+## Le structurel pur — mesurer plutôt que classer
+
+Changement de cap : on cesse de demander au neurone de **classer**, on lui
+demande de **mesurer** où et combien la structure change. Quatre directions,
+quatre verdicts honnêtes.
+
+### Direction 3 — recombinaison : la piste la plus solide
+
+L'échec d'exp08 venait de l'**opération** (mutation forcée), pas de la
+population. Avec une vraie recombinaison homologue entre chaînes distinctes :
+
+| opération | fitness | diversité |
+|---|---|---|
+| parent intact | 0.918 | — |
+| **recombinaison homologue** | **0.908** | 0.537 |
+| recombinaison non homologue | 0.465 | 0.487 |
+| mutation forcée | 0.813 | 0.036 |
+
+Sur 3 générations avec sélection :
+
+```
+mutation   : 0.925 → 0.832 → 0.684 → 0.617   (s'effondre)
+recombine  : 0.933 → 0.953 → 0.964 → 0.967   (monte)
+```
+
+C'est **l'homologie** qui agit (+0.443, R2 confirmé), pas la recombinaison
+en général. Le critère R1 (recombinaison ≥ mutation + 0.10 en un coup) est
+**infirmé de 0.006** — seuil non ajusté, rapporté tel quel.
+
+### Direction 2 — frontière de validité
+
+En dégradant la chaîne par mutation croissante, la fitness décroît
+monotonement et **franchit un seuil reproductible** :
+
+**mu\* = 0.063 ± 0.024** — au-delà, le neurone cesse de lire la structure.
+Contrôle : sans structure plantée, la fitness reste à 0.5 quel que soit mu,
+donc la frontière mesure bien la **perte de structure**, pas la disparition
+générale du signal.
+
+### Direction 1 — thermomètre : lecture réelle, mais battue
+
+Le P_sig local **sépare** un désordre planté dans de l'ordre (AUC 0.95,
+robuste à la longueur, contrôle anti-hallucination à 0.5). Mais :
+
+- il **échoue** dans le sens inverse (D‑ : 0.53–0.79) ;
+- une simple **variance locale du signal** le bat (0.997 contre 0.950) pour
+  un coût quasi nul.
+
+Conclusion : lire une vraie structure ne suffit pas — il faut **battre le
+témoin trivial**, et ici il ne le bat pas.
+
+### Direction 4 — audit
+
+Même instrument que la direction 1, donc mêmes limites. Utilisable comme
+contrôle amont, pas comme preuve.
+
 ## Figures
 
 | Criticité | Tâche motif caché |
@@ -98,6 +156,14 @@ entrée.
 | Enroulement — cas valides et défaut |
 |---|
 | ![enroulement](figures/img/enroulement.png) |
+
+| Thermomètre : sépare D+, rate D‑ | Frontière de validité |
+|---|---|
+| ![thermometre](figures/img/thermometre.png) | ![frontiere](figures/img/frontiere.png) |
+
+| Recombinaison vs mutation |
+|---|
+| ![recombinaison](figures/img/recombinaison.png) |
 
 Figures régénérables : `python figures/generer.py`.
 
@@ -129,8 +195,9 @@ organes/          les organes du neurone
   enroulement.py    invariant d'enroulement, PLV, scripts
   neurone_vrn.py    assemblage du neurone + plasticité G
   assemblage.py     population, fusion, couplage
-experiences/      exp00..exp08 — un script, un critère scellé, un .json
-figures/          générateur de figures + images
+  mesure.py         AUC avec ex æquo (rangs moyens) — partagée
+experiences/      exp00..exp12 — un script, un critère scellé, un .json
+figures/          générateur de figures + images (10 figures)
 docs/             notes de conception
 JOURNAL.md        journal de bord : mesures, erreurs, corrections
 SPEC-V0.md        spécification v0
@@ -144,6 +211,10 @@ python experiences/exp05_tache_motif.py     # motif caché
 python experiences/exp06_hierarchie.py      # opérateur de fusion
 python experiences/exp07_stabilisation.py   # population, couplage
 python experiences/exp08_population.py      # population vs neurone seul
+python experiences/exp09_thermometre.py     # thermometre (version pic)
+python experiences/exp10_thermometre_niveau.py  # thermometre (version niveau)
+python experiences/exp11_recombinaison.py   # recombinaison vs mutation
+python experiences/exp12_frontiere.py       # frontiere de validite
 python figures/generer.py                   # figures
 ```
 
@@ -180,6 +251,9 @@ pour un attracteur.
 | Enroulement | validé sur cas simples, **défaut d'échantillonnage connu** |
 | Population / couplage | synchronisation réelle, **utilité non démontrée** |
 | Sémantique (`c`) | **hors du chemin de sortie** |
+| Thermomètre local (P_sig par fenêtre) | lecture réelle D+, **battue par la variance** |
+| Recombinaison homologue | **piste la plus solide** (R2 +0.443, R4 massif) |
+| Frontière de validité | **établie** — mu\* = 0.063 ± 0.024 |
 
 ## Licence
 
