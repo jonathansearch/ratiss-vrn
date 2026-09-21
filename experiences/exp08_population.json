@@ -1,0 +1,25 @@
+{
+  "graine_base": 4000,
+  "N_par_classe": 50,
+  "taille_population": 6,
+  "criteres_scelles": {
+    "P1": "AUC(pop_avg) - AUC(seul) >= 0.03",
+    "P2": "AUC(pop couplee) > AUC(pop non couplee)",
+    "P3": "accord classe1 > accord classe0",
+    "P4": "|AUC(variant unique) - AUC(seul)| < 0.12"
+  },
+  "AUC": {
+    "seul": 0.9848,
+    "pop_avg": 0.9744,
+    "pop_coh": 0.9712,
+    "accord": 0.6152,
+    "pop_avg_couple": 0.9756,
+    "seul_ctrl": 0.9496
+  },
+  "verdicts": {
+    "P1": false,
+    "P2": true,
+    "P3": true,
+    "P4_controle": true
+  }
+}

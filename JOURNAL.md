@@ -715,3 +715,162 @@ population stabilisée *répond mieux* qu'un neurone seul.
 
 **Fichiers :** `organes/assemblage.py` (+ `coupler`, `consensus_chaine`,
 `coherence_bases`), `experiences/exp07_stabilisation.py` (+ balayage K).
+---
+
+## 2026-09-19 — Atelier 08 : la population bat-elle un neurone seul ? NON
+
+La question laissée ouverte à l'atelier 07. Réponse : **non**, et c'est un
+résultat négatif utile.
+
+### Protocole
+
+Population = N variants **de la même entrée** (mutations locales de G),
+chacun lu, puis fusionnés. C'est le principe du consensus déjà utilisé pour
+vérifier. Tâche : motif caché. Graines neuves 4000+i (prises : 0-1199,
+12-16, 21, 1000+, 2000+, 3000+). N = 50/classe, pop = 6 variants.
+
+### Résultats
+
+| mesure | moy classe 0 | moy classe 1 | AUC |
+|---|---|---|---|
+| **neurone seul** | 0.1128 | 0.1850 | **0.9848** |
+| pop_avg (fusion simple) | 0.1121 | 0.1741 | 0.9744 |
+| pop_coh (fusion confiance) | 0.1116 | 0.1722 | 0.9712 |
+| pop couplée (K=0.10) | 0.1129 | 0.1761 | 0.9756 |
+| accord (bases) | 0.9711 | 0.9740 | 0.6152 |
+
+| critère scellé | verdict |
+|---|---|
+| **P1** AUC(pop) − AUC(seul) ≥ +0.03 | **INFIRMÉ** (gain **−0.0104**) |
+| P2 AUC(pop couplée) > AUC(pop) | CONFIRMÉ (+0.0012) |
+| P3 accord classe1 > classe0 | CONFIRMÉ (0.9740 vs 0.9711, faible) |
+| **P4 CONTROLE** variant unique ≈ neurone seul | OK (0.9496 vs 0.9848) |
+
+### Diagnostic — pourquoi c'est négatif
+
+Mes variants sont des mutants **forcés** (`forcer=True`) de la même entrée.
+Or forcer éloigne la chaîne de sa cible de désalignement : chaque variant
+lit donc **moins bien** que la chaîne d'origine. La fusion moyenne le bruit
+— mais elle moyenne aussi le signal. Résultat : la population est
+légèrement **pire** que le neurone seul.
+
+Autrement dit, la population **n'ajoute pas d'information** ici : tous les
+variants regardent la même entrée. Une population utile devrait regarder
+des choses **différentes** (ou être couplée à une source de bruit qui
+n'efface pas le signal), pas 6 mutants d'une seule entrée.
+
+### Conséquence honnête
+
+- La **fusion** est **décorative pour la lecture** : +0.0012 avec couplage,
+  −0.0104 contre le neurone seul.
+- La **stabilisation** (montée de l'accord en K) est un phénomène **réel**
+  mais qui, dans ce montage, **ne sert pas la tâche**. Il faut le dire.
+- P2/P3 « confirmés » sont des gains **marginaux** — je ne les présente pas
+  comme un succès. P2 = +0.0012. P3 = +0.003.
+
+Ce qui reste vrai de l'atelier 07 : le couplage synchronise réellement la
+population (accord 0.40 → 0.96). Ce qui tombe ici : **cette synchronisation
+n'améliore pas la détection**.
+
+### Ce qu'il faudrait pour que la population serve
+
+Une population utile = des neurones qui lisent des **vues différentes** de
+la même réalité (fenêtres décalées, échelles différentes, longueurs
+différentes), pour que leurs erreurs soient **indépendantes** et que la
+fusion les annule. Six mutants d'une même chaîne ont des erreurs
+**corrélées** : la fusion n'annule rien.
+
+**Piste prochaine** (non lancée, sur ordre) : population multi-échelle —
+chaque neurone lit une fenêtre différente de la chaîne.
+
+**Fichiers :** `experiences/exp08_population.py` (+ `.json`).
+---
+
+## 2026-09-19 — Défaut préexistant : l'enroulement n'est pas invariant à l'échantillonnage
+
+Trouvé en générant les figures du dépôt. Le cas « sinus 3 périodes » du
+self-test (`organes/enroulement.py::__main__`) donne 2.282 — mais **avec
+exactement 200 points**. En changeant la densité d'échantillonnage :
+
+| points | enroulement (sinus 3 périodes) |
+|---|---|
+| 50 | 2.676 |
+| 100 | 2.717 |
+| 200 | **2.283** |
+| 400 | **0.900** |
+| 800 | 0.433 |
+| 1600 | 0.215 |
+
+Le cercle, lui, reste à 0.995 / 1.990 quelle que soit la densité. La ligne
+droite reste à 0.000.
+
+**Or un nombre d'enroulement est un invariant topologique** : il ne doit
+pas dépendre de la densité d'échantillonnage. Le fait que le cercle soit
+stable et le sinus non indique que l'instrument est **correct pour les
+trajectoires fermées simples**, mais **faux pour une trajectoire de Takens
+de signal**. La valeur 2.282 du journal est donc une **coïncidence
+d'échantillonnage** — elle n'est pas robuste.
+
+**Conséquence.** La validation de l'atelier 04 est **partiellement
+invalide** : les cas cercle / cercle ×2 / ligne droite tiennent, le cas
+sinus ne tient pas. Les expériences 04 (corrélation intra-script,
+cassure) reposent sur des OSCILLATEURS COUPLÉS, qui sont du type cercle —
+donc probablement épargnées. Mais **ce n'est pas vérifié** : il faut
+rejouer avec des densités différentes pour confirmer que les conclusions
+(cassure, PLV 1.000 → 0.197) sont stables.
+
+**Non corrigé** — je le signale plutôt que de le réparer sans ordre. Piste :
+normaliser par la longueur d'arc parcourue et non par pas de temps, ou
+re-échantillonner la trajectoire à densité fixe avant de compter.
+
+**Fichiers :** `figures/generer.py` (la figure `enroulement.png` montre le
+défaut explicitement, plutôt que de le masquer au point 200).
+---
+
+## 2026-09-19 — Professionnalisation du dépôt : README, licence fermée, figures
+
+Sur ordre : « quand tu pousses, fais-le avec des images, un repo pro et
+professionnel, licence fermée ».
+
+### Ce qui a été fait
+
+- **`README.md`** réécrit : en-tête centré, badges, résumé, tableaux de
+  résultats (y compris les résultats négatifs), figures intégrées,
+  installation, structure, procédure de reproduction, méthode, tableau de
+  statut. L'ancienne version exploratoire est remplacée.
+- **`LICENSE`** : licence propriétaire RATISS Labs, tous droits réservés.
+  Interdiction explicite de copie, dérivation, usage commercial,
+  publication, et **extraction des données à des fins d'entraînement de
+  systèmes d'apprentissage automatique**. Clause de confidentialité, clause
+  sur les méthodes propriétaires, absence de garantie, limitation de
+  responsabilité, droit français.
+- **`requirements.txt`** : numpy, ripser, persim, matplotlib, scikit-learn.
+- **`figures/generer.py`** + **7 figures** :
+  - `criticite.png` — y(p) avec maximum intérieur ;
+  - `enroulement.png` — cas valides ET le défaut d'échantillonnage ;
+  - `hierarchie.png` — g_dyn vs hiérarchique vs produit vs c ;
+  - `couplage.png` — accord de population selon K ;
+  - `coherence_taille.png` — R contre la loi du hasard 0.886/√N ;
+  - `population.png` — population vs neurone seul (négatif assumé) ;
+  - `tache_motif.png` — AUC par organe sur la tâche motif caché.
+
+### Décision éditoriale tenue
+
+La figure `enroulement.png` **montre le défaut** au lieu de le cacher : le
+panneau de droite expose la dépendance à l'échantillonnage. Il aurait été
+facile de publier uniquement le point à 200 points (2.282) et de présenter
+l'instrument comme « validé ». Ce serait exactement le mensonge que cette
+session a combattu trois fois. **Le dépôt publie ses défauts.**
+
+De même, la figure `population.png` affiche le **résultat négatif** en
+titre (« la population ne bat PAS le neurone seul »).
+
+### Note de sécurité, hors ordre
+
+Le remote git contient un jeton d'accès en clair dans l'URL
+(`git remote -v`). Ce n'est pas traité ici — je le signale. Il faudrait
+réécrire le remote pour utiliser un helper d'identifiants, et **révoquer ce
+jeton** qui a circulé.
+
+**Fichiers :** `README.md`, `LICENSE`, `requirements.txt`,
+`figures/generer.py`, `figures/img/*.png`.

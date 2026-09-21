@@ -1,0 +1,5 @@
+numpy>=1.26
+ripser>=0.6.4
+persim>=0.3.7
+matplotlib>=3.8
+scikit-learn>=1.3
