@@ -1,132 +1,21 @@
-LICENCE PROPRIÉTAIRE — RATISS LABS
-Tous droits réservés.
+MIT License
 
-Copyright (c) 2026 RATISS Labs — Jonathan Evina. Tous droits réservés.
+Copyright (c) 2026 RATISS Labs — Jonathan Evina
 
-=======================================================================
-1. PROPRIÉTÉ
-=======================================================================
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
 
-Le logiciel RATISS-VRN, incluant sans limitation l'ensemble des fichiers
-source, des scripts d'expérience, des résultats de mesure, de la
-documentation, des figures et des données associées (ci-après « le
-Logiciel »), est la propriété exclusive de RATISS Labs et de son
-fondateur.
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
 
-Le Logiciel est protégé par le droit d'auteur et par les conventions
-internationales applicables. Il est communiqué à titre confidentiel.
-
-=======================================================================
-2. ABSENCE DE CONCESSION DE LICENCE
-=======================================================================
-
-Aucune licence, aucun droit et aucune autorisation, exprès ou implicite,
-ne sont accordés par la présente. Tous les droits qui ne sont pas
-explicitement accordés par écrit par RATISS Labs sont réservés.
-
-Il est notamment INTERDIT, sans autorisation écrite préalable de
-RATISS Labs :
-
-  a) de copier, reproduire, distribuer, publier, transmettre ou rendre
-     accessible le Logiciel, en tout ou partie, par quelque moyen que ce
-     soit ;
-  b) de modifier, adapter, traduire, arranger ou créer des œuvres
-     dérivées du Logiciel ;
-  c) de décompiler, désassembler, rétroconcevoir ou tenter de découvrir
-     le code source ou les algorithmes sous-jacents, sauf dans les
-     limites strictement imposées par le droit applicable ;
-  d) d'utiliser le Logiciel, en tout ou partie, à des fins commerciales,
-     de recherche, d'enseignement ou de publication scientifique sans
-     autorisation écrite ;
-  e) de concéder en sous-licence, louer, prêter, vendre ou céder le
-     Logiciel ou un quelconque de ses droits ;
-  f) de retirer, masquer ou altérer tout avis de propriété, mention de
-     copyright ou avertissement figurant dans le Logiciel ;
-  g) d'extraire, réutiliser ou exploiter les données de mesure, les
-     résultats d'expérience ou les jeux de données contenus dans le
-     Logiciel, y compris à des fins d'entraînement de systèmes
-     d'apprentissage automatique.
-
-Le dépôt est PRIVÉ. Tout accès n'est consenti qu'à titre personnel et
-confidentiel, pour évaluation interne, et ne vaut en aucun cas
-autorisation de diffusion.
-
-=======================================================================
-3. CONFIDENTIALITÉ
-=======================================================================
-
-Le Logiciel contient des informations confidentielles et des savoir-faire
-propriétaires de RATISS Labs. Toute personne y ayant accès s'engage à :
-
-  a) ne pas divulguer ces informations à un tiers ;
-  b) ne les utiliser que dans le cadre strictement autorisé par
-     RATISS Labs ;
-  c) restituer ou détruire toute copie sur demande de RATISS Labs.
-
-=======================================================================
-4. DROITS DE PROPRIÉTÉ INTELLECTUELLE SUR LES MÉTHODES
-=======================================================================
-
-Les méthodes, algorithmes, métriques, architectures et conventions de
-mesure décrits ou implémentés dans le Logiciel — y compris, sans
-limitation, les principes, notations et modes opératoires qui y sont
-exposés — constituent des informations propriétaires de RATISS Labs.
-
-Leur divulgation, reproduction ou exploitation, sous quelque forme que
-ce soit, est soumise à autorisation écrite préalable.
-
-=======================================================================
-5. ABSENCE DE GARANTIE
-=======================================================================
-
-LE LOGICIEL EST FOURNI « EN L'ÉTAT », SANS GARANTIE D'AUCUNE SORTE,
-EXPRESSE OU IMPLICITE, Y COMPRIS, SANS LIMITATION, LES GARANTIES DE
-QUALITÉ MARCHANDE, D'ADÉQUATION À UN USAGE PARTICULIER, DE NON-
-CONTREFAÇON, OU D'EXACTITUDE DES RÉSULTATS.
-
-Ce Logiciel est un outil de RECHERCHE EXPLORATOIRE. Ses résultats et ses
-mesures n'ont pas été validés à des fins de production, de sécurité, de
-décision médicale ou de toute autre application critique. Il contient des
-défauts connus, documentés dans le fichier JOURNAL.md.
-
-=======================================================================
-6. LIMITATION DE RESPONSABILITÉ
-=======================================================================
-
-En aucun cas RATISS Labs, ses fondateurs, contributeurs ou ayants droit
-ne pourront être tenus responsables d'un dommage quelconque — direct,
-indirect, accessoire, spécial, exemplaire ou consécutif — résultant de
-l'utilisation ou de l'impossibilité d'utiliser le Logiciel, même si
-RATISS Labs a été informé de la possibilité d'un tel dommage.
-
-=======================================================================
-7. EFFET DU NON-RESPECT
-=======================================================================
-
-Toute violation des présentes conditions met fin immédiatement et
-automatiquement à l'ensemble des droits d'accès accordés, sans préjudice
-de tous les autres droits et recours de RATISS Labs, y compris le droit
-d'obtenir réparation du préjudice subi.
-
-=======================================================================
-8. DROIT APPLICABLE
-=======================================================================
-
-La présente licence est régie par le droit français. Tout litige relatif
-à son interprétation ou à son exécution relève de la compétence exclusive
-des tribunaux français.
-
-=======================================================================
-9. CONTACT
-=======================================================================
-
-Pour toute demande d'autorisation, de licence commerciale ou de
-collaboration :
-
-  RATISS Labs — Jonathan Evina
-  https://github.com/jonathansearch
-
-=======================================================================
-
-RATISS-VRN — la dynamique voit, la topologie vérifie, la sémantique nomme.
-Copyright (c) 2026 RATISS Labs. Tous droits réservés.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.

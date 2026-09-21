@@ -5,7 +5,7 @@
 ### Réalité Virtuelle Neuronale — un neurone qui voit, vérifie et nomme
 
 [![statut](https://img.shields.io/badge/statut-recherche%20exploratoire-1f4e79)](#statut)
-[![licence](https://img.shields.io/badge/licence-propri%C3%A9taire%20RATISS%20Labs-a02020)](LICENSE)
+[![licence](https://img.shields.io/badge/licence-MIT-548235)](LICENSE)
 [![python](https://img.shields.io/badge/python-3.13-1f4e79)](https://www.python.org/)
 [![instrument](https://img.shields.io/badge/ripser-0.6.15-548235)](https://ripser.scikit-tda.org/)
 
@@ -111,6 +111,25 @@ recombine  : 0.933 → 0.953 → 0.964 → 0.967   (monte)
 C'est **l'homologie** qui agit (+0.443, R2 confirmé), pas la recombinaison
 en général. Le critère R1 (recombinaison ≥ mutation + 0.10 en un coup) est
 **infirmé de 0.006** — seuil non ajusté, rapporté tel quel.
+
+**Puis exp13 a corrigé ce verdict.** En donnant assez de générations au bras
+non homologue, il **rattrape** (0.404 → 0.856). Le +0.443 était donc un
+**transitoire**, pas une propriété. Et surtout, un bras témoin `noop`
+(clones d'élites, *aucune opération*) montre que **la sélection seule fait
+presque tout le travail** :
+
+| bras | départ | 3 gén. | 6 gén. |
+|---|---|---|---|
+| noop — sélection seule | 0.648 | 0.882 | **0.883** |
+| recombinaison homologue | 0.648 | 0.881 | **0.910** |
+| recombinaison non homologue | 0.404 | 0.773 | 0.856 |
+| mutation | 0.648 | 0.699 | 0.768 |
+
+La recombinaison bat la sélection seule de **+0.027** — sous le seuil
+pré-déclaré de +0.05 (T2 **infirmé**). Elle bat la mutation de +0.142, et la
+mutation est **pire que ne rien faire**. Conclusion honnête : la direction 3
+n'est **pas** une piste solide ; c'est la **sélection** qui travaille, la
+recombinaison n'ajoutant qu'une marge faible.
 
 ### Direction 2 — frontière de validité
 
@@ -252,14 +271,19 @@ pour un attracteur.
 | Population / couplage | synchronisation réelle, **utilité non démontrée** |
 | Sémantique (`c`) | **hors du chemin de sortie** |
 | Thermomètre local (P_sig par fenêtre) | lecture réelle D+, **battue par la variance** |
-| Recombinaison homologue | **piste la plus solide** (R2 +0.443, R4 massif) |
+| Recombinaison homologue | **revue à la baisse** — eff. sélection seule (exp13) |
 | Frontière de validité | **établie** — mu\* = 0.063 ± 0.024 |
 
 ## Licence
 
-**Propriétaire — tous droits réservés.** Voir [`LICENSE`](LICENSE).
-Dépôt **privé** : aucune redistribution sans autorisation écrite de RATISS
-Labs.
+**MIT** — voir [`LICENSE`](LICENSE). Le dépôt est ouvert : le code, les
+instruments, les expériences et les résultats sont libres d'usage, de
+modification et de redistribution.
+
+Le choix est délibéré. Ce que ce dépôt revendique — un instrument qui
+mesure, une méthode avec critères scellés — n'a de valeur que s'il est
+**vérifiable**. Un cœur fermé rendrait l'invérifiable la seule chose qu'on
+puisse en dire.
 
 ---
 

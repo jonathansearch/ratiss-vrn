@@ -1,0 +1,70 @@
+{
+  "version": "v2 (noop = baseline de selection ; v1 jetee, cf. docstring)",
+  "graine_base": 15000,
+  "N_pop": 10,
+  "taille_pop": 8,
+  "generations": 6,
+  "mu_init": 0.12,
+  "mu_evol": 0.05,
+  "fenetre": 48,
+  "criteres_scelles": {
+    "T0": "intact >= 0.80 et degrade < intact - 0.10",
+    "T1": "noop fin > noop init",
+    "T2": "recomb_hom fin - noop fin >= +0.05",
+    "T3": "recomb_hom fin - mutation fin >= +0.10",
+    "T4": "recomb_hom fin - nonhom fin >= +0.15",
+    "T5": "recomb_hom >= noop sur >= 60% des generations",
+    "T6": "mutation fin <= noop fin + 0.05"
+  },
+  "controles_mesure": {
+    "intact": 0.9672,
+    "degrade_mu0": 0.4806
+  },
+  "courbes": {
+    "noop": [
+      0.6482,
+      0.8032,
+      0.867,
+      0.8822,
+      0.8826,
+      0.8826,
+      0.8826
+    ],
+    "mutation": [
+      0.6482,
+      0.6305,
+      0.6913,
+      0.699,
+      0.7454,
+      0.7801,
+      0.7682
+    ],
+    "recomb_hom": [
+      0.6482,
+      0.7648,
+      0.8511,
+      0.8807,
+      0.9031,
+      0.9074,
+      0.9098
+    ],
+    "recomb_nonhom": [
+      0.404,
+      0.5716,
+      0.7036,
+      0.7732,
+      0.8065,
+      0.8391,
+      0.8563
+    ]
+  },
+  "verdicts": {
+    "T0_controle": true,
+    "T1": true,
+    "T2_central": false,
+    "T3": true,
+    "T4": false,
+    "T5": true,
+    "T6_controle": true
+  }
+}

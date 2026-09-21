@@ -1040,3 +1040,55 @@ Deux directions tiennent (2 et 3), une est battue par un témoin trivial (1/4).
 La direction 3 reste la plus intéressante : c'est la seule où une opération
 *de population* fait mieux que la dégradation.
 
+
+## 2026-09-20 — Atelier 13 : la recombinaison bat-elle la SÉLECTION SEULE ?
+
+Graines neuves 15000+, N=10, pop=8, 6 générations, mu_init=0.12 (au-delà de
+la frontière mu*=0.063 mesurée en exp12), mu_evol=0.05. Les trois bras réels
+partagent **exactement** le même état de départ.
+
+**v1 — MON CRITÈRE ÉTAIT MAL CONÇU.** Je traitais `noop` (clones d'élites,
+aucune opération) comme un contrôle de non-dérive, seuil |delta| ≤ 0.03. Il a
+monté de +0.046. Ce n'était **pas** un artefact : la sélection (garder la
+moitié haute + cloner) fait monter la moyenne **mécaniquement**. Mon critère
+condamnait un effet réel.
+
+Conséquence : `noop` n'est pas un contrôle nul, c'est **le témoin principal**.
+En v2 il devient la baseline, et la question change : non plus « la
+recombinaison monte-t-elle ? » (la sélection suffit) mais « la recombinaison
+bat-elle la sélection seule ? ».
+
+**v2 — résultat net :**
+
+| bras | g0 | g3 | g6 |
+|---|---|---|---|
+| noop (sélection seule) | 0.648 | 0.882 | **0.883** |
+| recomb_hom | 0.648 | 0.881 | **0.910** |
+| recomb_nonhom | 0.404 | 0.773 | 0.856 |
+| mutation | 0.648 | 0.699 | 0.768 |
+
+| critère scellé | résultat |
+|---|---|
+| T0 contrôles de mesure | OK (intact 0.967, dégradé 0.481) |
+| T1 la sélection seule fait monter noop (+0.234) | CONFIRMÉ |
+| **T2 CRITÈRE CENTRAL : recomb bat la sélection seule (+0.027)** | **INFIRMÉ** |
+| T3 bat la mutation (+0.142) | CONFIRMÉ |
+| **T4 spécificité homologie (+0.054)** | **INFIRMÉ** |
+| T5 avance sur ≥60% des générations (4/7) | CONFIRMÉ (de justesse) |
+| T6 contrôle : mutation ≤ noop | OK |
+
+**Ce que ça détruit.** La sélection fait **presque tout le travail** (+0.234
+sans aucune opération). Et T4 **invalide rétroactivement le résultat
+d'exp11** : le contrôle non-homologue rattrape (0.404 → 0.856) quand on lui
+donne assez de générations. Donc le **+0.443 de R2 (exp11) était un
+transitoire**, pas une propriété : la lignée non homologue avait simplement
+besoin de plus de générations pour revenir par sélection.
+
+**Ce qui survit.** La recombinaison fait *un peu* mieux que la sélection seule
+(+0.027) et nettement mieux que la mutation (+0.142), et la mutation est
+**pire que ne rien faire** (0.768 vs 0.883) — cohérent avec le cliquet de
+Muller. Mais « un peu mieux » sous un seuil pré-déclaré, ça ne s'annonce pas.
+
+**Correction de trajectoire : la direction 3 n'est plus « la piste la
+plus solide ».** C'est la sélection qui travaille. La recombinaison ajoute
+une marge faible et non significative au seuil fixé.
